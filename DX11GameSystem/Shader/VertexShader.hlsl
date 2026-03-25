@@ -1,4 +1,16 @@
-float4 main( float4 pos : POSITION ) : SV_POSITION
+struct VS_OUTPUT
 {
-	return pos;
+    float4 pos : SV_POSITION;
+    float4 color : COLOR0;
+};
+
+//--------------------------------------------------------------------------------------
+// バーテックスシェーダ
+//--------------------------------------------------------------------------------------
+VS_OUTPUT main(float4 pos : POSITION, float4 color : COLOR)
+{
+    VS_OUTPUT output = (VS_OUTPUT) 0;
+    output.pos = pos;
+    output.color = color;
+    return output;
 }

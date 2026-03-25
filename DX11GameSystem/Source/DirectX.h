@@ -21,6 +21,7 @@
 struct SimpleVertex
 {
     DirectX::XMFLOAT3 Pos;
+    DirectX::XMFLOAT4 Color;
 };
 //--------------------------š’Ç‰Áª--------------------------
 

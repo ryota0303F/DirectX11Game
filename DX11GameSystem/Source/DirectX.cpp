@@ -17,7 +17,6 @@ DirectX11::~DirectX11()
 
 }
 
-//--------------------------★追加↓--------------------------
 //--------------------------------------------------------------------------------------
 // DirectX11::CompileShaderFromFile()：シェーダのコンパイル
 //--------------------------------------------------------------------------------------
@@ -46,7 +45,6 @@ HRESULT DirectX11::CompileShaderFromFile(const WCHAR* wcFileName, LPCSTR lpEntry
 
     return S_OK;
 }
-//--------------------------★追加↑--------------------------
 
 //--------------------------------------------------------------------------------------
 // DirectX11::InitDevice()：DirectX関係の初期化
@@ -188,7 +186,7 @@ HRESULT DirectX11::InitDevice()
     vp.TopLeftY = 0;
     m_D3DDeviceContext->RSSetViewports(1, &vp);
 
-    //--------------------------★追加↓--------------------------
+
     //バーテックスシェーダのコンパイル
     Microsoft::WRL::ComPtr<ID3DBlob> D3DBlobVS;
     hr = CompileShaderFromFile(L"Shader/VertexShader.hlsl", "main", "vs_5_0", &D3DBlobVS);
@@ -204,6 +202,7 @@ HRESULT DirectX11::InitDevice()
     D3D11_INPUT_ELEMENT_DESC layout[] =
     {
         { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
     };
     UINT uiElements = ARRAYSIZE(layout);
 
@@ -231,9 +230,9 @@ HRESULT DirectX11::InitDevice()
     //バーテックスバッファの作成
     SimpleVertex vertices[] =
     {
-        DirectX::XMFLOAT3(0.0f, 0.5f, 0.5f),
-        DirectX::XMFLOAT3(0.5f, -0.5f, 0.5f),
-        DirectX::XMFLOAT3(-0.5f, -0.5f, 0.5f),
+        { DirectX::XMFLOAT3(0.0f, 0.5f, 0.5f), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f) },
+        { DirectX::XMFLOAT3(0.5f, -0.5f, 0.5f), DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+        { DirectX::XMFLOAT3(-0.5f, -0.5f, 0.5f), DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f) },
     };
     D3D11_BUFFER_DESC bd = {};
     bd.Usage = D3D11_USAGE_DYNAMIC;
@@ -258,7 +257,6 @@ HRESULT DirectX11::InitDevice()
     //シェーダのセット
     m_D3DDeviceContext->VSSetShader(m_D3DVertexShader.Get(), nullptr, 0);
     m_D3DDeviceContext->PSSetShader(m_D3DPixelShader.Get(), nullptr, 0);
-    //--------------------------★追加↑--------------------------
 
     //------------------------------------------------------------
     // DirectWriteの初期化
@@ -303,8 +301,6 @@ void DirectX11::Render()
 {
     m_D3DDeviceContext->ClearRenderTargetView(m_D3DRenderTargetView.Get(), DirectX::Colors::Aquamarine);//m_D3DRenderTargetViewではなくm_D3DRenderTargetView.Get()
 
-    //--------------------------★変更↓--------------------------
-
     //------------------------------------------------------------
     //初期設定
     //------------------------------------------------------------
@@ -330,9 +326,9 @@ void DirectX11::Render()
     m_D3DDeviceContext->Map(m_D3DVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
     SimpleVertex vertices[] =
     {
-        DirectX::XMFLOAT3(0.0f, 0.5f + static_cast<FLOAT>(cos(dElapsedTime / 1000) / 2), 0.5f),
-        DirectX::XMFLOAT3(0.5f, -0.5f, 0.5f),
-        DirectX::XMFLOAT3(-0.5f, -0.5f, 0.5f),
+        { DirectX::XMFLOAT3(0.0f, 0.5f, 0.5f), DirectX::XMFLOAT4(static_cast<FLOAT>(fabs(cos(dElapsedTime / 1000))), 0.0f, 0.0f, 1.0f) },
+        { DirectX::XMFLOAT3(0.5f, -0.5f, 0.5f), DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+        { DirectX::XMFLOAT3(-0.5f, -0.5f, 0.5f), DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f) },
     };
     memcpy(msr.pData, vertices, sizeof(vertices));
     m_D3DDeviceContext->Unmap(m_D3DVertexBuffer.Get(), 0);
@@ -345,7 +341,7 @@ void DirectX11::Render()
     m_D2DDeviceContext->BeginDraw();
     m_D2DDeviceContext->DrawText(wcText1, ARRAYSIZE(wcText1) - 1, m_DWriteTextFormat.Get(), D2D1::RectF(0, 0, 800, 20), m_D2DSolidBrush.Get(), D2D1_DRAW_TEXT_OPTIONS_NONE);//m_DWriteTextFormatではなくm_DWriteTextFormat.Get()
     m_D2DDeviceContext->EndDraw();
-    //--------------------------★変更↑--------------------------
+
 
     m_DXGISwapChain1->Present(0, 0);
 }
