@@ -1,12 +1,12 @@
 #pragma once
 
 #pragma comment(lib,"d3d11.lib")
-#pragma comment(lib,"d3dCompiler.lib")//---★追加---
+#pragma comment(lib,"d3dCompiler.lib")
 #pragma comment(lib,"d2d1.lib")
 #pragma comment(lib,"dwrite.lib")
 #include <d3d11_1.h>
-#include <d3dcompiler.h>//---★追加---
-#include <directxmath.h>//---★追加---
+#include <d3dcompiler.h>
+#include <directxmath.h>
 #include <directxcolors.h>
 #include <d2d1_1.h>
 #include <dwrite.h>
@@ -14,7 +14,7 @@
 #include <wrl/client.h>
 #include <random>
 
-//--------------------------★追加↓--------------------------
+
 //--------------------------------------------------------------------------------------
 // 構造体
 //--------------------------------------------------------------------------------------
@@ -23,7 +23,13 @@ struct SimpleVertex
     DirectX::XMFLOAT3 Pos;
     DirectX::XMFLOAT4 Color;
 };
-//--------------------------★追加↑--------------------------
+struct ConstantBuffer
+{
+    DirectX::XMMATRIX world;
+    DirectX::XMMATRIX view;
+    DirectX::XMMATRIX projection;
+};
+
 
 //--------------------------------------------------------------------------------------
 // DirectX11クラス：DirectX関係
@@ -48,6 +54,10 @@ private:
     Microsoft::WRL::ComPtr<ID3D11VertexShader> m_D3DVertexShader;//---★追加---
     Microsoft::WRL::ComPtr<ID3D11PixelShader> m_D3DPixelShader;//---★追加---
     Microsoft::WRL::ComPtr<ID3D11Buffer> m_D3DVertexBuffer;//---★追加---
+    Microsoft::WRL::ComPtr<ID3D11Buffer> m_D3DConstantBuffer;//---★追加---
+    DirectX::XMMATRIX m_matWorld;//---★追加---
+    DirectX::XMMATRIX m_matView;//---★追加---
+    DirectX::XMMATRIX m_matProjection;//---★追加---
 
     //------------------------------------------------------------
     // DirectWriteの初期化

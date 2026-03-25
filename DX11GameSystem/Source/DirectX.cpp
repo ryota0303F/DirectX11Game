@@ -254,8 +254,30 @@ HRESULT DirectX11::InitDevice()
     //プリミティブトポロジの設定
     m_D3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
+    //コンスタントバッファの作成
+    bd.Usage = D3D11_USAGE_DYNAMIC;
+    bd.ByteWidth = sizeof(ConstantBuffer);
+    bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    hr = D3DDevice->CreateBuffer(&bd, nullptr, &m_D3DConstantBuffer);
+    if (FAILED(hr))
+        return hr;
+
+    //ワールドマトリックスの設定
+    m_matWorld = DirectX::XMMatrixIdentity();
+
+    //ビューマトリックスの設定
+    DirectX::XMVECTOR vecEye = DirectX::XMVectorSet(0.0f, 0.0f, -1.0f, 0.0f);//カメラの位置
+    DirectX::XMVECTOR vecFocus = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);//カメラの焦点
+    DirectX::XMVECTOR vecUp = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);//カメラの上方向
+    m_matView = DirectX::XMMatrixLookAtLH(vecEye, vecFocus, vecUp);
+
+    //プロジェクションマトリックスの設定
+    m_matProjection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PIDIV2, static_cast<FLOAT>(Window::GetClientWidth()) / static_cast<FLOAT>(Window::GetClientHeight()), 0.01f, 100.0f);
+
     //シェーダのセット
     m_D3DDeviceContext->VSSetShader(m_D3DVertexShader.Get(), nullptr, 0);
+    m_D3DDeviceContext->VSSetConstantBuffers(0, 1, m_D3DConstantBuffer.GetAddressOf());
     m_D3DDeviceContext->PSSetShader(m_D3DPixelShader.Get(), nullptr, 0);
 
     //------------------------------------------------------------
@@ -326,12 +348,20 @@ void DirectX11::Render()
     m_D3DDeviceContext->Map(m_D3DVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
     SimpleVertex vertices[] =
     {
-        { DirectX::XMFLOAT3(0.0f, 0.5f, 0.5f), DirectX::XMFLOAT4(static_cast<FLOAT>(fabs(cos(dElapsedTime / 1000))), 0.0f, 0.0f, 1.0f) },
+        { DirectX::XMFLOAT3(0.0f, 0.5f + static_cast<FLOAT>(cos(dElapsedTime / 1000) / 2), 0.5f), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f) },
         { DirectX::XMFLOAT3(0.5f, -0.5f, 0.5f), DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
         { DirectX::XMFLOAT3(-0.5f, -0.5f, 0.5f), DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f) },
     };
     memcpy(msr.pData, vertices, sizeof(vertices));
     m_D3DDeviceContext->Unmap(m_D3DVertexBuffer.Get(), 0);
+    //カメラの更新
+    ConstantBuffer cb;
+    cb.world = DirectX::XMMatrixTranspose(m_matWorld);
+    cb.view = DirectX::XMMatrixTranspose(m_matView);
+    cb.projection = DirectX::XMMatrixTranspose(m_matProjection);
+    m_D3DDeviceContext->Map(m_D3DConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
+    memcpy(msr.pData, (void*)(&cb), sizeof(cb));
+    m_D3DDeviceContext->Unmap(m_D3DConstantBuffer.Get(), 0);
     //三角形の描画
     m_D3DDeviceContext->Draw(3, 0);
 
