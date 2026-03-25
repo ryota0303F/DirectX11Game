@@ -1,15 +1,23 @@
 #include "Main.h"
 #include "DirectX.h"
 
-HWND Window::g_hWnd = nullptr;
-double Window::g_dFps = 0;
-double Window::g_dFrameTime = 0;
+//--------------------------------------------------------------------------------------
+// 静的メンバ
+//--------------------------------------------------------------------------------------
+HWND Window::g_hWnd = nullptr;//ウィンドウハンドル
+int Window::g_iClientWidth = 800;//クライアント領域の横幅
+int Window::g_iClientHeight = 600;//クライアント領域の高さ
+double Window::g_dFps = 0;//FPS
+double Window::g_dFrameTime = 0;//1フレームあたりの時間
 
 //--------------------------------------------------------------------------------------
 // 前方宣言
 //--------------------------------------------------------------------------------------
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
+//--------------------------------------------------------------------------------------
+// wWinMain()関数：エントリーポイント
+//--------------------------------------------------------------------------------------
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {
     if (FAILED(CoInitialize(nullptr)))//COMの初期化
@@ -48,15 +56,20 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
         }
     }
 
+    CoUninitialize();//COMの終了処理
+
     return (int)msg.wParam;
 }
 
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+//--------------------------------------------------------------------------------------
+// WndProc()関数：ウィンドウプロシージャ
+//--------------------------------------------------------------------------------------
+LRESULT CALLBACK WndProc(HWND hWnd, UINT uiMessage, WPARAM wParam, LPARAM lParam)
 {
     PAINTSTRUCT ps;
     HDC hdc;
 
-    switch (message)
+    switch (uiMessage)
     {
     case WM_PAINT:
         hdc = BeginPaint(hWnd, &ps);
@@ -68,12 +81,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
 
     default:
-        return DefWindowProc(hWnd, message, wParam, lParam);
+        return DefWindowProc(hWnd, uiMessage, wParam, lParam);
     }
 
     return 0;
 }
 
+//--------------------------------------------------------------------------------------
+// Window::InitWindow()関数：ウィンドウの表示
+//--------------------------------------------------------------------------------------
 HRESULT Window::InitWindow(HINSTANCE hInstance, int nCmdShow)
 {
     WNDCLASSEX wcex;
@@ -92,9 +108,9 @@ HRESULT Window::InitWindow(HINSTANCE hInstance, int nCmdShow)
     if (!RegisterClassEx(&wcex))
         return E_FAIL;
 
-    RECT rc = { 0, 0, 800, 600 };
+    RECT rc = { 0, 0, g_iClientWidth, g_iClientHeight };
     AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
-    g_hWnd = CreateWindow(L"WindowClass", L"DirectXプログラミング",
+    g_hWnd = CreateWindow(L"WindowClass", L"DirectXプログラミング",//★---変更---
         WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
         CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, hInstance,
         nullptr);
@@ -106,45 +122,45 @@ HRESULT Window::InitWindow(HINSTANCE hInstance, int nCmdShow)
     return S_OK;
 }
 
-HWND Window::GethWnd()
-{
-    return g_hWnd;
-}
-
-//--------------------------★追加↓--------------------------
+//--------------------------------------------------------------------------------------
+// Window::InitFps()関数：FPS計測の初期化
+//--------------------------------------------------------------------------------------
 void Window::InitFps()
 {
-
-    QueryPerformanceFrequency(&Freq);
-    QueryPerformanceCounter(&StartTime);//現在の時間を取得（1フレーム目）
+    QueryPerformanceFrequency(&m_freq);
+    QueryPerformanceCounter(&m_starttime);//現在の時間を取得（1フレーム目）
 }
 
+//--------------------------------------------------------------------------------------
+// Window::CalculationFps()関数：FPS計測
+//--------------------------------------------------------------------------------------
 void Window::CalculationFps()
 {
-    //FPSの計算
-    if (iCount == 60)//カウントが60の時の処理
+    if (m_iCount == 60)//カウントが60の時の処理
     {
-        QueryPerformanceCounter(&NowTime);//現在の時間を取得（60フレーム目）
+        QueryPerformanceCounter(&m_nowtime);//現在の時間を取得（60フレーム目）
         //FPS = 1秒 / 1フレームの描画にかかる時間
         //    = 1000ms / ((現在の時間ms - 1フレーム目の時間ms) / 60フレーム)
-        g_dFps = 1000.0 / (static_cast<double>((NowTime.QuadPart - StartTime.QuadPart) * 1000 / Freq.QuadPart) / 60.0);
-        iCount = 0;//カウントを初期値に戻す
-        StartTime = NowTime;//1フレーム目の時間を現在の時間にする
+        g_dFps = 1000.0 / (static_cast<double>((m_nowtime.QuadPart - m_starttime.QuadPart) * 1000 / m_freq.QuadPart) / 60.0);
+        m_iCount = 0;//カウントを初期値に戻す
+        m_starttime = m_nowtime;//1フレーム目の時間を現在の時間にする
     }
-    iCount++;//カウント+1
+    m_iCount++;//カウント+1
 }
 
+//--------------------------------------------------------------------------------------
+// Window::CalculationSleep()関数：Sleepさせる時間の計算
+//--------------------------------------------------------------------------------------
 void Window::CalculationSleep()
 {
-    //Sleepさせる時間の計算
-    QueryPerformanceCounter(&NowTime);//現在の時間を取得
+    QueryPerformanceCounter(&m_nowtime);//現在の時間を取得
     //Sleepさせる時間ms = 1フレーム目から現在のフレームまでの描画にかかるべき時間ms - 1フレーム目から現在のフレームまで実際にかかった時間ms
     //                  = (1000ms / 60)*フレーム数 - (現在の時間ms - 1フレーム目の時間ms)
-    SleepTime = static_cast<DWORD>((1000.0 / 60.0) * iCount - (NowTime.QuadPart - StartTime.QuadPart) * 1000 / Freq.QuadPart);
-    if (SleepTime > 0 && SleepTime < 18)//大きく変動がなければSleepTimeは1～17の間に納まる
+    DWORD dwSleepTime = static_cast<DWORD>((1000.0 / 60.0) * m_iCount - (m_nowtime.QuadPart - m_starttime.QuadPart) * 1000 / m_freq.QuadPart);
+    if (dwSleepTime > 0 && dwSleepTime < 18)//大きく変動がなければSleepTimeは1～17の間に納まる
     {
         timeBeginPeriod(1);
-        Sleep(SleepTime);
+        Sleep(dwSleepTime);
         timeEndPeriod(1);
     }
     else//大きく変動があった場合
@@ -155,25 +171,57 @@ void Window::CalculationSleep()
     }
 }
 
+//--------------------------------------------------------------------------------------
+// Window::CalculationFrameTime()関数：1フレームあたりの時間の計測
+//--------------------------------------------------------------------------------------
+void Window::CalculationFrameTime()
+{
+    static int iFlg;
+    if (iFlg == 0)
+    {
+        QueryPerformanceCounter(&m_frametime_a);
+        iFlg = 1;
+    }
+    QueryPerformanceCounter(&m_frametime_b);
+    g_dFrameTime = (m_frametime_b.QuadPart - m_frametime_a.QuadPart) * 1000.0 / m_freq.QuadPart;
+    m_frametime_a = m_frametime_b;
+}
+
+//--------------------------------------------------------------------------------------
+// Window::GethWnd()関数：hWndの取得
+//--------------------------------------------------------------------------------------
+HWND Window::GethWnd()
+{
+    return g_hWnd;
+}
+
+//--------------------------------------------------------------------------------------
+// Window::GetClientWidth()関数：クライアント領域の横幅の取得
+//--------------------------------------------------------------------------------------
+int Window::GetClientWidth()
+{
+    return g_iClientWidth;
+}
+
+//--------------------------------------------------------------------------------------
+// Window::GetClientHeight()関数：クライアント領域の高さの取得
+//--------------------------------------------------------------------------------------
+int Window::GetClientHeight()
+{
+    return g_iClientHeight;
+}
+
+//--------------------------------------------------------------------------------------
+// Window::GetFps()関数：FPSの取得
+//--------------------------------------------------------------------------------------
 double Window::GetFps()
 {
     return g_dFps;
 }
 
-void Window::CalculationFrameTime()
-{
-    //1フレームあたりの時間の計測
-    static int a;
-    if (a == 0)
-    {
-        QueryPerformanceCounter(&FrameTimeA);
-        a = 1;
-    }
-    QueryPerformanceCounter(&FrameTimeB);
-    g_dFrameTime = (FrameTimeB.QuadPart - FrameTimeA.QuadPart) * 1000.0 / Freq.QuadPart;
-    FrameTimeA = FrameTimeB;
-}
-
+//--------------------------------------------------------------------------------------
+// Window::GetFrameTime()関数：1フレームあたりの時間の取得
+//--------------------------------------------------------------------------------------
 double Window::GetFrameTime()
 {
     return g_dFrameTime;
