@@ -1,9 +1,8 @@
-#pragma once
-
 #pragma comment(lib,"d3d11.lib")
 #pragma comment(lib,"d3dCompiler.lib")
 #pragma comment(lib,"d2d1.lib")
 #pragma comment(lib,"dwrite.lib")
+#pragma comment(lib,"windowscodecs.lib")//---★追加---
 #include <d3d11_1.h>
 #include <d3dcompiler.h>
 #include <directxmath.h>
@@ -13,7 +12,7 @@
 #include <wchar.h>
 #include <wrl/client.h>
 #include <random>
-
+#include <wincodec.h>//---★追加---
 
 //--------------------------------------------------------------------------------------
 // 構造体
@@ -22,14 +21,15 @@ struct SimpleVertex
 {
     DirectX::XMFLOAT3 Pos;
     DirectX::XMFLOAT4 Color;
+    DirectX::XMFLOAT2 Tex;//---★追加---
 };
+
 struct ConstantBuffer
 {
     DirectX::XMMATRIX world;
     DirectX::XMMATRIX view;
     DirectX::XMMATRIX projection;
 };
-
 
 //--------------------------------------------------------------------------------------
 // DirectX11クラス：DirectX関係
@@ -39,7 +39,7 @@ class DirectX11
 public:
     DirectX11();
     ~DirectX11();
-    HRESULT CompileShaderFromFile(const WCHAR* wcFileName, LPCSTR lpEntryPoint, LPCSTR lpShaderModel, ID3DBlob** D3DBlob);//---★追加---
+    HRESULT CompileShaderFromFile(const WCHAR* wcFileName, LPCSTR lpEntryPoint, LPCSTR lpShaderModel, ID3DBlob** D3DBlob);
     HRESULT InitDevice();
     void Render();
 private:
@@ -51,13 +51,13 @@ private:
     Microsoft::WRL::ComPtr<IDXGISwapChain1> m_DXGISwapChain1;
     Microsoft::WRL::ComPtr<ID2D1Bitmap1> m_D2DBitmap1;
     Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_D3DRenderTargetView;
-    Microsoft::WRL::ComPtr<ID3D11VertexShader> m_D3DVertexShader;//---★追加---
-    Microsoft::WRL::ComPtr<ID3D11PixelShader> m_D3DPixelShader;//---★追加---
-    Microsoft::WRL::ComPtr<ID3D11Buffer> m_D3DVertexBuffer;//---★追加---
-    Microsoft::WRL::ComPtr<ID3D11Buffer> m_D3DConstantBuffer;//---★追加---
-    DirectX::XMMATRIX m_matWorld;//---★追加---
-    DirectX::XMMATRIX m_matView;//---★追加---
-    DirectX::XMMATRIX m_matProjection;//---★追加---
+    Microsoft::WRL::ComPtr<ID3D11VertexShader> m_D3DVertexShader;
+    Microsoft::WRL::ComPtr<ID3D11PixelShader> m_D3DPixelShader;
+    Microsoft::WRL::ComPtr<ID3D11Buffer> m_D3DVertexBuffer;
+    Microsoft::WRL::ComPtr<ID3D11Buffer> m_D3DConstantBuffer;
+    DirectX::XMMATRIX m_matWorld;
+    DirectX::XMMATRIX m_matView;
+    DirectX::XMMATRIX m_matProjection;
 
     //------------------------------------------------------------
     // DirectWriteの初期化
@@ -65,7 +65,6 @@ private:
     Microsoft::WRL::ComPtr<IDWriteTextFormat> m_DWriteTextFormat;
     Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> m_D2DSolidBrush;
 };
-
 /*
     //マウス入力
     int iMouseL = 0, iMouseR = 0;
