@@ -200,14 +200,12 @@ HRESULT DirectX11::InitDevice()
         return hr;
 
     //インプットレイアウトの定義
-    //--------------------------★変更↓--------------------------
     D3D11_INPUT_ELEMENT_DESC layout[] =
     {
         { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
         //5番目のパラメータ：先頭からのバイト数4バイト(FLAOT)×3(RGB)=12
         { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
     };
-    //--------------------------★変更↑--------------------------
     UINT uiElements = ARRAYSIZE(layout);
 
     //インプットレイアウトの作成
@@ -243,7 +241,7 @@ HRESULT DirectX11::InitDevice()
             FLOAT fY = static_cast<FLOAT>(cos(dTheta));
             FLOAT fZ = static_cast<FLOAT>(sin(dTheta) * sin(dPhi));
             vertices[m_iUMax * v + u].Pos = DirectX::XMFLOAT3(fX, fY, fZ);
-            vertices[m_iUMax * v + u].Normal = DirectX::XMFLOAT3(fX, fY, fZ);//★---追加---
+            vertices[m_iUMax * v + u].Normal = DirectX::XMFLOAT3(fX, fY, fZ);
         }
     }
     D3D11_BUFFER_DESC bd = {};
@@ -315,7 +313,7 @@ HRESULT DirectX11::InitDevice()
     Microsoft::WRL::ComPtr<ID3D11RasterizerState> D3DRasterizerState;
     D3D11_RASTERIZER_DESC ras = {};
     //D3D11_FILL_WIREFRAME（ワイヤーフレーム） D3D11_FILL_SOLID（ソリッド）
-    ras.FillMode = D3D11_FILL_SOLID;//★---変更---
+    ras.FillMode = D3D11_FILL_SOLID;
     //D3D11_CULL_NONE（カリングなし：裏表描画） D3D11_CULL_FRONT（表面カリング：裏面描画） D3D11_CULL_BACK（裏面カリング：表面描画）
     ras.CullMode = D3D11_CULL_BACK;
     ras.FrontCounterClockwise = TRUE;
@@ -329,20 +327,18 @@ HRESULT DirectX11::InitDevice()
     //ワールドマトリックスの設定
     m_matWorld = DirectX::XMMatrixIdentity();
 
-    //ビューマトリックスの設定
-    DirectX::XMVECTOR vecEye = DirectX::XMVectorSet(0.0f, 0.5f, -3.0f, 0.0f);//カメラの位置
-    DirectX::XMVECTOR vecFocus = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);//カメラの焦点
-    DirectX::XMVECTOR vecUp = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);//カメラの上方向
-    m_matView = DirectX::XMMatrixLookAtLH(vecEye, vecFocus, vecUp);
+    //--------------------------★変更↓--------------------------
+
+    //--------------------------★変更↑--------------------------
 
     //プロジェクションマトリックスの設定
-    m_matProjection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PIDIV4, static_cast<FLOAT>(Window::GetClientWidth()) / static_cast<FLOAT>(Window::GetClientHeight()), 0.01f, 100.0f);
+    m_matProjection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PIDIV4, static_cast<FLOAT>(Window::GetClientWidth()) / static_cast<FLOAT>(Window::GetClientHeight()), 0.01f, 100.0f);//★---変更---
 
     //シェーダのセット
     m_D3DDeviceContext->VSSetShader(m_D3DVertexShader.Get(), nullptr, 0);
     m_D3DDeviceContext->VSSetConstantBuffers(0, 1, m_D3DConstantBuffer.GetAddressOf());
     m_D3DDeviceContext->PSSetShader(m_D3DPixelShader.Get(), nullptr, 0);
-    m_D3DDeviceContext->PSSetConstantBuffers(0, 1, m_D3DConstantBuffer.GetAddressOf());//★---追加---
+    m_D3DDeviceContext->PSSetConstantBuffers(0, 1, m_D3DConstantBuffer.GetAddressOf());
 
     //------------------------------------------------------------
     // DirectWriteの初期化
@@ -389,27 +385,82 @@ void DirectX11::Render()
 
     //--------------------------★変更↓--------------------------
     //------------------------------------------------------------
+    // 初期設定
+    //------------------------------------------------------------
+    static FLOAT fTheta = 4.57f;//カメラ横方向角度
+    static FLOAT fDelta = 0.43f;//カメラ縦方向角度
+    static bool bMouseR_drag;//マウス右ドラッグフラグ
+    static FLOAT fDistance = 4;//カメラ位置から焦点までの距離
+    static POINT mousepoint_a;//マウス位置
+    static POINT mousepoint_b;//マウス位置
+    static FLOAT fCameraX = fDistance * cos(fDelta) * cos(fTheta);//カメラの位置X座標
+    static FLOAT fCameraY = fDistance * sin(fDelta);//カメラの位置Y座標
+    static FLOAT fCameraZ = fDistance * cos(fDelta) * sin(fTheta);//カメラの位置Z座標
+
+    //------------------------------------------------------------
+    // キー入力関係
+    //------------------------------------------------------------
+    //マウス右クリック
+    if (GetAsyncKeyState(VK_RBUTTON) & 0x8000 && bMouseR_drag == false && Window::GetWindowActive() == true)
+    {
+        bMouseR_drag = true;//マウス右ドラッグフラグ
+
+        GetCursorPos(&mousepoint_a);//マウスのスクリーン座標取得
+    }
+    else if (!(GetAsyncKeyState(VK_RBUTTON) & 0x8000))
+    {
+        bMouseR_drag = false;//マウス右ドラッグフラグ
+    }
+    //マウス右ドラッグ
+    if (bMouseR_drag)
+    {
+        GetCursorPos(&mousepoint_b);//マウスのスクリーン座標取得
+
+        fTheta -= (mousepoint_b.x - mousepoint_a.x) * 0.003f;//カメラ横方向角度変更
+
+        if (fDelta + (mousepoint_b.y - mousepoint_a.y) * 0.003f >= DirectX::XM_PI / 2.0f - 0.0001f)
+        {
+            fDelta = DirectX::XM_PI / 2.0f - 0.0001f;//カメラ縦方向角度変更
+        }
+        else if (fDelta + (mousepoint_b.y - mousepoint_a.y) * 0.003f <= -DirectX::XM_PI / 2.0f + 0.0001f)
+        {
+            fDelta = -DirectX::XM_PI / 2.0f + 0.0001f;//カメラ縦方向角度変更
+        }
+        else
+        {
+            fDelta += (mousepoint_b.y - mousepoint_a.y) * 0.003f;//カメラ縦方向角度変更
+        }
+
+        GetCursorPos(&mousepoint_a);//マウスのスクリーン座標取得
+    }
+    //カメラ位置決定
+    fCameraX = fDistance * cos(fDelta) * cos(fTheta);
+    fCameraY = fDistance * sin(fDelta);
+    fCameraZ = fDistance * cos(fDelta) * sin(fTheta);
+
+    //------------------------------------------------------------
     // 文字操作
     //------------------------------------------------------------
     //FPS表示用
     WCHAR wcText1[256] = { 0 };
     swprintf(wcText1, 256, L"FPS=%lf", Window::GetFps());
-    //WindowActive表示用
+    //カメラ角度表示用
     WCHAR wcText2[256] = { 0 };
-    if (Window::GetWindowActive())
-    {
-        swprintf(wcText2, 256, L"ウィンドウがアクティブです。");
-    }
-    else
-    {
-        swprintf(wcText2, 256, L"ウィンドウがアクティブではありません。");
-    }
-    //--------------------------★変更↑--------------------------
+    swprintf(wcText2, 256, L"fTheta=%f, fDelta=%f", fTheta, fDelta);
+    //カメラ位置表示用
+    WCHAR wcText3[256] = { 0 };
+    swprintf(wcText3, 256, L"fCameraX=%f, fCameraY=%f, fCameraZ=%f", fCameraX, fCameraY, fCameraZ);
 
     //------------------------------------------------------------
     // 3D描画
     //------------------------------------------------------------
     D3D11_MAPPED_SUBRESOURCE msr;
+    //ビューマトリックスの設定
+    DirectX::XMVECTOR vecEye = DirectX::XMVectorSet(fCameraX, fCameraY, fCameraZ, 0.0f);//カメラの位置
+    DirectX::XMVECTOR vecFocus = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);//カメラの焦点
+    DirectX::XMVECTOR vecUp = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);//カメラの上方向
+    m_matView = DirectX::XMMatrixLookAtLH(vecEye, vecFocus, vecUp);
+
     //カメラの更新
     ConstantBuffer cb;
     cb.world = DirectX::XMMatrixTranspose(m_matWorld);
@@ -422,13 +473,13 @@ void DirectX11::Render()
     //球体の描画
     m_D3DDeviceContext->DrawIndexed(m_iIndexNum, 0, 0);
 
-    //--------------------------★変更↓--------------------------
     //------------------------------------------------------------
     // 2D描画
     //------------------------------------------------------------
     m_D2DDeviceContext->BeginDraw();
     m_D2DDeviceContext->DrawText(wcText1, ARRAYSIZE(wcText1) - 1, m_DWriteTextFormat.Get(), D2D1::RectF(0, 0, 800, 20), m_D2DSolidBrush.Get(), D2D1_DRAW_TEXT_OPTIONS_NONE);//m_DWriteTextFormatではなくm_DWriteTextFormat.Get()
     m_D2DDeviceContext->DrawText(wcText2, ARRAYSIZE(wcText2) - 1, m_DWriteTextFormat.Get(), D2D1::RectF(0, 20, 800, 40), m_D2DSolidBrush.Get(), D2D1_DRAW_TEXT_OPTIONS_NONE);//m_DWriteTextFormatではなくm_DWriteTextFormat.Get()
+    m_D2DDeviceContext->DrawText(wcText3, ARRAYSIZE(wcText3) - 1, m_DWriteTextFormat.Get(), D2D1::RectF(0, 40, 800, 60), m_D2DSolidBrush.Get(), D2D1_DRAW_TEXT_OPTIONS_NONE);//m_DWriteTextFormatではなくm_DWriteTextFormat.Get()
     m_D2DDeviceContext->EndDraw();
     //--------------------------★変更↑--------------------------
 
