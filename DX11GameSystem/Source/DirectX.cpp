@@ -342,6 +342,8 @@ HRESULT DirectX11::InitDevice()
     m_D3DDeviceContext->PSSetShader(m_D3DPixelShader.Get(), nullptr, 0);
     m_D3DDeviceContext->PSSetConstantBuffers(0, 1, m_D3DConstantBuffer.GetAddressOf());
 
+    mGameMesh.Init();
+
     //------------------------------------------------------------
     // DirectWrite‚Ì‰Šú‰»
     //------------------------------------------------------------
@@ -473,8 +475,6 @@ void DirectX11::Render()
     memcpy(msr.pData, (void*)(&cb), sizeof(cb));
     m_D3DDeviceContext->Unmap(m_D3DConstantBuffer.Get(), 0);
     //‹…‘Ì‚Ì•`‰æ
-    m_D3DDeviceContext->DrawIndexed(m_iIndexNum, 0, 0);
-
     mGameMesh.Draw();
 
     //------------------------------------------------------------
