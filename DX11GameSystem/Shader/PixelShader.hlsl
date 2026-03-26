@@ -22,16 +22,16 @@ float4 main(VS_OUTPUT input) : SV_TARGET
     float3 ambient = float3(1.0f, 1.0f, 0.0f) * 0.6f;
 
     //ディフューズ
-    float3 L = lightpos.xyz;
-    float3 N = input.normal;
-    float LN = dot(L, N);
-    float3 diffuse = float3(1.0f, 1.0f, 1.0f) * max(0.0f, LN) * 0.12f;
+    float3 L = normalize(lightpos.xyz);
+    float3 N = normalize(input.normal);
+    float NL = dot(N, L);
+    float3 diffuse = float3(1.0f, 1.0f, 1.0f) * saturate(NL) * 0.3f;
 
     //スペキュラ
-    float3 R = reflect(-lightpos.xyz, input.normal);
+    float3 R = 2.0f * N * NL - L;
     float3 V = normalize(eyepos.xyz - input.normal);
-    float RV = dot(R, V);
-    float3 specular = float3(1.0f, 1.0f, 1.0f) * pow(max(0.0f, RV), 13.6f) * 0.000001f;
+    float RV = saturate(dot(R, V));
+    float3 specular = float3(1.0f, 1.0f, 1.0f) * pow(RV, 10.0f) * 0.15f;
 
-    return float4(saturate(ambient + diffuse + specular), 1.0f);
+    return float4(ambient + diffuse + specular, 1.0f);
 }
