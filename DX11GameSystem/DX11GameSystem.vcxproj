@@ -128,10 +128,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\DirectX.cpp" />
+    <ClCompile Include="Source\GameMesh.cpp" />
     <ClCompile Include="Source\main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\DirectX.h" />
+    <ClInclude Include="Source\GameMesh.h" />
     <ClInclude Include="Source\main.h" />
   </ItemGroup>
   <ItemGroup>

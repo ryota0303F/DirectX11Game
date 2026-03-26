@@ -27,12 +27,18 @@
     <ClCompile Include="Source\DirectX.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="Source\GameMesh.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\main.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="Source\DirectX.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\GameMesh.h">
       <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>

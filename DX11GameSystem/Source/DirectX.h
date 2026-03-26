@@ -13,6 +13,7 @@
 #include <wchar.h>
 #include <wrl/client.h>
 #include <random>
+#include "GameMesh.h"
 
 //--------------------------------------------------------------------------------------
 // 構造体
@@ -73,6 +74,8 @@ private:
     //------------------------------------------------------------
     Microsoft::WRL::ComPtr<IDWriteTextFormat> m_DWriteTextFormat;
     Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> m_D2DSolidBrush;
+
+    GameMesh mGameMesh;
 };
 /*
     //マウス入力
