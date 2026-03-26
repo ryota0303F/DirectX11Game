@@ -3,6 +3,7 @@
 
 void GameMesh::Init()
 {
+
 }
 
 void GameMesh::Draw()

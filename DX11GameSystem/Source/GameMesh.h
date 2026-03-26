@@ -7,6 +7,7 @@ public:
 	void Draw();
 
 private:
+
 	const int m_iUMax = 48;
 	const int m_iVMax = 24;
 	int m_iVertexNum = m_iUMax * (m_iVMax + 1);
