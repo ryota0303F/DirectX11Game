@@ -20,7 +20,7 @@
 struct SimpleVertex
 {
     DirectX::XMFLOAT3 Pos;
-    DirectX::XMFLOAT3 Normal;//Åö---í«â¡---
+    DirectX::XMFLOAT3 Normal;
 };
 
 struct ConstantBuffer
@@ -28,7 +28,8 @@ struct ConstantBuffer
     DirectX::XMMATRIX world;
     DirectX::XMMATRIX view;
     DirectX::XMMATRIX projection;
-    DirectX::XMVECTOR lightpos;//Åö---í«â¡---
+    DirectX::XMVECTOR lightpos;
+    DirectX::XMVECTOR eyepos;//Åö---í«â¡---
 };
 
 //--------------------------------------------------------------------------------------
@@ -62,8 +63,8 @@ private:
     //------------------------------------------------------------
     // ãÖëÃÇÃï`âÊ
     //------------------------------------------------------------
-    const int m_iUMax = 48;//Åö---ïœçX---
-    const int m_iVMax = 24;//Åö---ïœçX---
+    const int m_iUMax = 48;
+    const int m_iVMax = 24;
     int m_iVertexNum = m_iUMax * (m_iVMax + 1);
     int m_iIndexNum = 2 * m_iVMax * (m_iUMax + 1);
 

@@ -327,10 +327,6 @@ HRESULT DirectX11::InitDevice()
     //ワールドマトリックスの設定
     m_matWorld = DirectX::XMMatrixIdentity();
 
-    //--------------------------★変更↓--------------------------
-
-    //--------------------------★変更↑--------------------------
-
     //プロジェクションマトリックスの設定
     m_matProjection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PIDIV4, static_cast<FLOAT>(Window::GetClientWidth()) / static_cast<FLOAT>(Window::GetClientHeight()), 0.01f, 100.0f);//★---変更---
 
@@ -383,12 +379,11 @@ void DirectX11::Render()
 {
     m_D3DDeviceContext->ClearRenderTargetView(m_D3DRenderTargetView.Get(), DirectX::Colors::Aquamarine);//m_D3DRenderTargetViewではなくm_D3DRenderTargetView.Get()
 
-    //--------------------------★変更↓--------------------------
     //------------------------------------------------------------
     // 初期設定
     //------------------------------------------------------------
-    static FLOAT fTheta = 4.57f;//カメラ横方向角度
-    static FLOAT fDelta = 0.43f;//カメラ縦方向角度
+    static FLOAT fTheta = 5.0f;//カメラ横方向角度//★---変更---
+    static FLOAT fDelta = -0.06f;//カメラ縦方向角度//★---変更---
     static bool bMouseR_drag;//マウス右ドラッグフラグ
     static FLOAT fDistance = 4;//カメラ位置から焦点までの距離
     static POINT mousepoint_a;//マウス位置
@@ -467,6 +462,7 @@ void DirectX11::Render()
     cb.view = DirectX::XMMatrixTranspose(m_matView);
     cb.projection = DirectX::XMMatrixTranspose(m_matProjection);
     cb.lightpos = DirectX::XMVectorSet(-1, 1, -2, 1);
+    cb.eyepos = vecEye;//★---追加---
     m_D3DDeviceContext->Map(m_D3DConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
     memcpy(msr.pData, (void*)(&cb), sizeof(cb));
     m_D3DDeviceContext->Unmap(m_D3DConstantBuffer.Get(), 0);
@@ -481,7 +477,6 @@ void DirectX11::Render()
     m_D2DDeviceContext->DrawText(wcText2, ARRAYSIZE(wcText2) - 1, m_DWriteTextFormat.Get(), D2D1::RectF(0, 20, 800, 40), m_D2DSolidBrush.Get(), D2D1_DRAW_TEXT_OPTIONS_NONE);//m_DWriteTextFormatではなくm_DWriteTextFormat.Get()
     m_D2DDeviceContext->DrawText(wcText3, ARRAYSIZE(wcText3) - 1, m_DWriteTextFormat.Get(), D2D1::RectF(0, 40, 800, 60), m_D2DSolidBrush.Get(), D2D1_DRAW_TEXT_OPTIONS_NONE);//m_DWriteTextFormatではなくm_DWriteTextFormat.Get()
     m_D2DDeviceContext->EndDraw();
-    //--------------------------★変更↑--------------------------
 
     m_DXGISwapChain1->Present(0, 0);
 }
