@@ -1,8 +1,9 @@
+#pragma once
+
 #pragma comment(lib,"d3d11.lib")
 #pragma comment(lib,"d3dCompiler.lib")
 #pragma comment(lib,"d2d1.lib")
 #pragma comment(lib,"dwrite.lib")
-#pragma comment(lib,"windowscodecs.lib")//---š’Ç‰Á---
 #include <d3d11_1.h>
 #include <d3dcompiler.h>
 #include <directxmath.h>
@@ -12,17 +13,16 @@
 #include <wchar.h>
 #include <wrl/client.h>
 #include <random>
-#include <wincodec.h>//---š’Ç‰Á---
 
 //--------------------------------------------------------------------------------------
 // \‘¢‘Ì
 //--------------------------------------------------------------------------------------
+//--------------------------š•ÏX«--------------------------
 struct SimpleVertex
 {
     DirectX::XMFLOAT3 Pos;
-    DirectX::XMFLOAT4 Color;
-    DirectX::XMFLOAT2 Tex;//---š’Ç‰Á---
 };
+//--------------------------š•ÏXª--------------------------
 
 struct ConstantBuffer
 {
@@ -58,6 +58,16 @@ private:
     DirectX::XMMATRIX m_matWorld;
     DirectX::XMMATRIX m_matView;
     DirectX::XMMATRIX m_matProjection;
+
+    //--------------------------š’Ç‰Á«--------------------------
+    //------------------------------------------------------------
+    // ‹…‘Ì‚Ì•`‰æ
+    //------------------------------------------------------------
+    const int m_iUMax = 24;
+    const int m_iVMax = 12;
+    int m_iVertexNum = m_iUMax * (m_iVMax + 1);
+    int m_iIndexNum = 2 * m_iVMax * (m_iUMax + 1);
+    //--------------------------š’Ç‰Áª--------------------------
 
     //------------------------------------------------------------
     // DirectWrite‚Ì‰Šú‰»

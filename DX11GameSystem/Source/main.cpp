@@ -5,8 +5,8 @@
 // 静的メンバ
 //--------------------------------------------------------------------------------------
 HWND Window::g_hWnd = nullptr;//ウィンドウハンドル
-int Window::g_iClientWidth = 800;//クライアント領域の横幅
-int Window::g_iClientHeight = 600;//クライアント領域の高さ
+int Window::g_iClientWidth = 1280;//クライアント領域の横幅
+int Window::g_iClientHeight = 720;//クライアント領域の高さ
 double Window::g_dFps = 0;//FPS
 double Window::g_dFrameTime = 0;//1フレームあたりの時間
 

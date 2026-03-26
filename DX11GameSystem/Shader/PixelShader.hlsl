@@ -1,18 +1,4 @@
-Texture2D TextureData : register(t0);
-
-SamplerState SamplerData : register(s0);
-
-struct VS_OUTPUT
+float4 main() : SV_TARGET
 {
-    float4 pos : SV_POSITION;
-    float4 color : COLOR0;
-    float2 tex : TEXCOORD0;
-};
-
-//--------------------------------------------------------------------------------------
-// ピクセルシェーダ
-//--------------------------------------------------------------------------------------
-float4 main(VS_OUTPUT input) : SV_TARGET
-{
-    return TextureData.Sample(SamplerData, input.tex);
+    return float4(0.0f, 0.0f, 0.0f, 1.0f);
 }

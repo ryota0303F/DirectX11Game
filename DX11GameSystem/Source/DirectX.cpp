@@ -200,14 +200,12 @@ HRESULT DirectX11::InitDevice()
         return hr;
 
     //インプットレイアウトの定義
+    //--------------------------★変更↓--------------------------
     D3D11_INPUT_ELEMENT_DESC layout[] =
     {
         { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        //5番目のパラメータ：先頭からのバイト数4バイト(FLAOT)×3(RGB)=12
-        { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        //5番目のパラメータ：先頭からのバイト数4バイト(FLAOT)×4(RGBA)+12=16+12=28
-        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 28, D3D11_INPUT_PER_VERTEX_DATA, 0 },
     };
+    //--------------------------★変更↑--------------------------
     UINT uiElements = ARRAYSIZE(layout);
 
     //インプットレイアウトの作成
@@ -232,21 +230,29 @@ HRESULT DirectX11::InitDevice()
         return hr;
 
     //バーテックスバッファの作成
-    SimpleVertex vertices[] =
+    //--------------------------★変更↓--------------------------
+    std::vector<SimpleVertex> vertices(m_iVertexNum);
+    for (int v = 0; v <= m_iVMax; v++)
     {
-        { DirectX::XMFLOAT3(-0.5f, 0.5f, 0.0f), DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), DirectX::XMFLOAT2(0.0f, 0.0f) },
-        { DirectX::XMFLOAT3(0.5f, 0.5f, 0.0f), DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), DirectX::XMFLOAT2(1.0f, 0.0f) },
-        { DirectX::XMFLOAT3(-0.5f, -0.5f, 0.0f), DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), DirectX::XMFLOAT2(0.0f, 1.0f) },
-        { DirectX::XMFLOAT3(0.5f, -0.5f, 0.0f), DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), DirectX::XMFLOAT2(1.0f, 1.0f) },
-    };
+        for (int u = 0; u < m_iUMax; u++)
+        {
+            double dTheta = DirectX::XMConvertToRadians(180.0f * v / m_iVMax);
+            double dPhi = DirectX::XMConvertToRadians(360.0f * u / m_iUMax);
+            FLOAT fX = static_cast<FLOAT>(sin(dTheta) * cos(dPhi));
+            FLOAT fY = static_cast<FLOAT>(cos(dTheta));
+            FLOAT fZ = static_cast<FLOAT>(sin(dTheta) * sin(dPhi));
+            vertices[m_iUMax * v + u].Pos = DirectX::XMFLOAT3(fX, fY, fZ);
+        }
+    }
+    //--------------------------★変更↑--------------------------
     D3D11_BUFFER_DESC bd = {};
     bd.Usage = D3D11_USAGE_DYNAMIC;
-    bd.ByteWidth = sizeof(SimpleVertex) * 4;
+    bd.ByteWidth = sizeof(SimpleVertex) * m_iVertexNum;//★---変更---
     bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
     D3D11_SUBRESOURCE_DATA sub = {};
-    sub.pSysMem = vertices;
+    sub.pSysMem = &vertices.front();//★---変更---
     hr = D3DDevice->CreateBuffer(&bd, &sub, &m_D3DVertexBuffer);
     if (FAILED(hr))
         return hr;
@@ -258,16 +264,35 @@ HRESULT DirectX11::InitDevice()
 
     //インデックスバッファの作成
     Microsoft::WRL::ComPtr<ID3D11Buffer> D3DIndexBuffer;
-    WORD indices[] =
+    //--------------------------★変更↓--------------------------
+    int i = 0;
+    std::vector<WORD> indices(m_iIndexNum);
+    for (int v = 0; v < m_iVMax; v++)
     {
-        0,1,2,
-        2,1,3,
-    };
+        for (int u = 0; u <= m_iUMax; u++)
+        {
+            if (u == m_iUMax)
+            {
+                indices[i] = v * m_iUMax;
+                i++;
+                indices[i] = (v + 1) * m_iUMax;
+                i++;
+            }
+            else
+            {
+                indices[i] = (v * m_iUMax) + u;
+                i++;
+                indices[i] = indices[i - 1] + m_iUMax;
+                i++;
+            }
+        }
+    }
+    //--------------------------★変更↑--------------------------
     bd.Usage = D3D11_USAGE_DEFAULT;
-    bd.ByteWidth = sizeof(WORD) * 6;
+    bd.ByteWidth = sizeof(WORD) * m_iIndexNum;//★---変更---
     bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
     bd.CPUAccessFlags = 0;
-    sub.pSysMem = indices;
+    sub.pSysMem = &indices.front();//★---変更---
     hr = D3DDevice->CreateBuffer(&bd, &sub, &D3DIndexBuffer);
     if (FAILED(hr))
         return hr;
@@ -276,7 +301,7 @@ HRESULT DirectX11::InitDevice()
     m_D3DDeviceContext->IASetIndexBuffer(D3DIndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
 
     //プリミティブトポロジの設定
-    m_D3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    m_D3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);//★---変更---
 
     //コンスタントバッファの作成
     bd.Usage = D3D11_USAGE_DYNAMIC;
@@ -291,9 +316,10 @@ HRESULT DirectX11::InitDevice()
     Microsoft::WRL::ComPtr<ID3D11RasterizerState> D3DRasterizerState;
     D3D11_RASTERIZER_DESC ras = {};
     //D3D11_FILL_WIREFRAME（ワイヤーフレーム） D3D11_FILL_SOLID（ソリッド）
-    ras.FillMode = D3D11_FILL_SOLID;
+    ras.FillMode = D3D11_FILL_WIREFRAME;//★---変更---
     //D3D11_CULL_NONE（カリングなし：裏表描画） D3D11_CULL_FRONT（表面カリング：裏面描画） D3D11_CULL_BACK（裏面カリング：表面描画）
-    ras.CullMode = D3D11_CULL_NONE;
+    ras.CullMode = D3D11_CULL_BACK;//★---変更---
+    ras.FrontCounterClockwise = TRUE;//★---追加---
     hr = D3DDevice->CreateRasterizerState(&ras, &D3DRasterizerState);
     if (FAILED(hr))
         return hr;
@@ -301,93 +327,11 @@ HRESULT DirectX11::InitDevice()
     //ラスタライザの設定
     m_D3DDeviceContext->RSSetState(D3DRasterizerState.Get());
 
-    //--------------------------★追加↓--------------------------
-    //テクスチャの読み込み
-    Microsoft::WRL::ComPtr<IWICImagingFactory> WICImagingFactory;
-    hr = CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory, (LPVOID*)(&WICImagingFactory));
-    if (FAILED(hr))
-        return hr;
-
-    Microsoft::WRL::ComPtr<IWICBitmapDecoder> WICBitmapDecoder;
-    //関数CreateDecoderFromFilename()
-    //第1引数：ファイル名
-    hr = WICImagingFactory->CreateDecoderFromFilename(L"Resource/image.png", nullptr, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &WICBitmapDecoder);
-    if (FAILED(hr))
-        return hr;
-
-    Microsoft::WRL::ComPtr<IWICBitmapFrameDecode> WICBitmapFrameDecode;
-    hr = WICBitmapDecoder->GetFrame(0, &WICBitmapFrameDecode);
-    if (FAILED(hr))
-        return hr;
-
-    Microsoft::WRL::ComPtr<IWICFormatConverter> WICFormatConverter;
-    hr = WICImagingFactory->CreateFormatConverter(&WICFormatConverter);
-    if (FAILED(hr))
-        return hr;
-
-    hr = WICFormatConverter->Initialize(WICBitmapFrameDecode.Get(), GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeNone, nullptr, 1.0f, WICBitmapPaletteTypeMedianCut);
-    if (FAILED(hr))
-        return hr;
-
-    //テクスチャのサイズを取得
-    UINT uiImageWidth;
-    UINT uiImageHeight;
-    hr = WICFormatConverter->GetSize(&uiImageWidth, &uiImageHeight);
-    if (FAILED(hr))
-        return hr;
-
-    //テクスチャの作成
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> D3DTexture;
-    D3D11_TEXTURE2D_DESC td;
-    td.Width = uiImageWidth;
-    td.Height = uiImageHeight;
-    td.MipLevels = 1;
-    td.ArraySize = 1;
-    td.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-    td.SampleDesc.Count = 1;
-    td.SampleDesc.Quality = 0;
-    td.Usage = D3D11_USAGE_DYNAMIC;
-    td.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-    td.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-    td.MiscFlags = 0;
-    hr = D3DDevice->CreateTexture2D(&td, nullptr, &D3DTexture);
-    if (FAILED(hr))
-        return hr;
-
-    D3D11_MAPPED_SUBRESOURCE msr;
-    m_D3DDeviceContext->Map(D3DTexture.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
-    WICFormatConverter->CopyPixels(nullptr, uiImageWidth * 4, uiImageWidth * uiImageHeight * 4, (BYTE*)msr.pData);
-    m_D3DDeviceContext->Unmap(D3DTexture.Get(), 0);
-
-    //シェーダリソースビューの作成
-    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> D3DShaderResourceView;
-    D3D11_SHADER_RESOURCE_VIEW_DESC srv = {};
-    srv.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-    srv.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-    srv.Texture2D.MipLevels = 1;
-    hr = D3DDevice->CreateShaderResourceView(D3DTexture.Get(), &srv, &D3DShaderResourceView);
-    if (FAILED(hr))
-        return hr;
-
-    //サンプラステートの設定
-    Microsoft::WRL::ComPtr<ID3D11SamplerState> D3DSamplerState;
-    D3D11_SAMPLER_DESC sd = {};
-    //補間方法　D3D11_FILTER_MIN_MAG_MIP_POINT（ポイントサンプリング）、D3D11_FILTER_MIN_MAG_MIP_LINEAR（線形補間）、D3D11_FILTER_ANISOTROPIC（異方性補間）等
-    sd.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-    //0～1の範囲外テクスチャ　D3D11_TEXTURE_ADDRESS_WRAP（並べる）、D3D11_TEXTURE_ADDRESS_MIRROR（反転）等
-    sd.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-    sd.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-    sd.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-    hr = D3DDevice->CreateSamplerState(&sd, &D3DSamplerState);
-    if (FAILED(hr))
-        return hr;
-    //--------------------------★追加↑--------------------------
-
     //ワールドマトリックスの設定
     m_matWorld = DirectX::XMMatrixIdentity();
 
     //ビューマトリックスの設定
-    DirectX::XMVECTOR vecEye = DirectX::XMVectorSet(0.0f, 0.0f, -3.0f, 0.0f);//カメラの位置
+    DirectX::XMVECTOR vecEye = DirectX::XMVectorSet(0.0f, 0.5f, -3.0f, 0.0f);//カメラの位置//★---変更---
     DirectX::XMVECTOR vecFocus = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);//カメラの焦点
     DirectX::XMVECTOR vecUp = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);//カメラの上方向
     m_matView = DirectX::XMMatrixLookAtLH(vecEye, vecFocus, vecUp);
@@ -399,8 +343,6 @@ HRESULT DirectX11::InitDevice()
     m_D3DDeviceContext->VSSetShader(m_D3DVertexShader.Get(), nullptr, 0);
     m_D3DDeviceContext->VSSetConstantBuffers(0, 1, m_D3DConstantBuffer.GetAddressOf());
     m_D3DDeviceContext->PSSetShader(m_D3DPixelShader.Get(), nullptr, 0);
-    m_D3DDeviceContext->PSSetSamplers(0, 1, D3DSamplerState.GetAddressOf());//★---追加---
-    m_D3DDeviceContext->PSSetShaderResources(0, 1, D3DShaderResourceView.GetAddressOf());//★---追加---
 
     //------------------------------------------------------------
     // DirectWriteの初期化
@@ -446,13 +388,13 @@ void DirectX11::Render()
     m_D3DDeviceContext->ClearRenderTargetView(m_D3DRenderTargetView.Get(), DirectX::Colors::Aquamarine);//m_D3DRenderTargetViewではなくm_D3DRenderTargetView.Get()
 
     //--------------------------★変更↓--------------------------
+
     //------------------------------------------------------------
     //計算
     //------------------------------------------------------------
     static FLOAT fAngle = 0;
     fAngle += static_cast<FLOAT>(Window::GetFrameTime() / 1000.0);
     m_matWorld = DirectX::XMMatrixRotationY(fAngle);//Y軸回転
-    //--------------------------★変更↑--------------------------
 
     //------------------------------------------------------------
     // 文字操作
@@ -464,20 +406,7 @@ void DirectX11::Render()
     //------------------------------------------------------------
     // 3D描画
     //------------------------------------------------------------
-    //頂点の書き替え
     D3D11_MAPPED_SUBRESOURCE msr;
-    m_D3DDeviceContext->Map(m_D3DVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
-    //--------------------------★変更↓--------------------------
-    SimpleVertex vertices[] =
-    {
-        { DirectX::XMFLOAT3(-0.5f, 0.5f, 0.0f), DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), DirectX::XMFLOAT2(0.0f, 0.0f) },
-        { DirectX::XMFLOAT3(0.5f, 0.5f, 0.0f), DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), DirectX::XMFLOAT2(1.0f, 0.0f) },
-        { DirectX::XMFLOAT3(-0.5f, -0.5f, 0.0f), DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), DirectX::XMFLOAT2(0.0f, 1.0f) },
-        { DirectX::XMFLOAT3(0.5f, -0.5f, 0.0f), DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), DirectX::XMFLOAT2(1.0f, 1.0f) },
-    };
-    //--------------------------★変更↑--------------------------
-    memcpy(msr.pData, vertices, sizeof(vertices));
-    m_D3DDeviceContext->Unmap(m_D3DVertexBuffer.Get(), 0);
     //カメラの更新
     ConstantBuffer cb;
     cb.world = DirectX::XMMatrixTranspose(m_matWorld);
@@ -486,8 +415,9 @@ void DirectX11::Render()
     m_D3DDeviceContext->Map(m_D3DConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
     memcpy(msr.pData, (void*)(&cb), sizeof(cb));
     m_D3DDeviceContext->Unmap(m_D3DConstantBuffer.Get(), 0);
-    //四角形の描画
-    m_D3DDeviceContext->DrawIndexed(6, 0, 0);
+    //球体の描画
+    m_D3DDeviceContext->DrawIndexed(m_iIndexNum, 0, 0);
+    //--------------------------★変更↑--------------------------
 
     //------------------------------------------------------------
     // 2D描画
