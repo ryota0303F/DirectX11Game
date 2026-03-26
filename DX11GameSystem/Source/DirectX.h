@@ -39,12 +39,16 @@ struct ConstantBuffer
 class DirectX11
 {
 public:
-    DirectX11();
+    static DirectX11& Instance();
     ~DirectX11();
     HRESULT CompileShaderFromFile(const WCHAR* wcFileName, LPCSTR lpEntryPoint, LPCSTR lpShaderModel, ID3DBlob** D3DBlob);
     HRESULT InitDevice();
     void Render();
+
+    Microsoft::WRL::ComPtr<ID3D11DeviceContext> GetDeviceContext3D();
 private:
+    DirectX11();
+
     //------------------------------------------------------------
     // DirectX11Ç∆Direct2D 1.1ÇÃèâä˙âª
     //------------------------------------------------------------
@@ -77,6 +81,9 @@ private:
 
     GameMesh mGameMesh;
 };
+
+#define DX11 DirectX11::Instance()
+
 /*
     //É}ÉEÉXì¸óÕ
     int iMouseL = 0, iMouseR = 0;

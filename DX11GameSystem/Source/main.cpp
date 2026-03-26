@@ -29,9 +29,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     if (FAILED(win.InitWindow(hInstance, nCmdShow)))
         return 0;
 
-    DirectX11 dx;
+    DX11;
 
-    if (FAILED(dx.InitDevice()))
+    if (FAILED(DX11.InitDevice()))
         return 0;
 
     win.InitFps();
@@ -53,7 +53,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
             win.CalculationFrameTime();
 
-            dx.Render();
+            DX11.Render();
 
             win.CalculationSleep();
         }

@@ -11,6 +11,12 @@ DirectX11::DirectX11()
     m_matProjection = DirectX::XMMatrixIdentity();
 }
 
+DirectX11& DirectX11::Instance() {
+    //static変数は一度だけ初期化される
+    static DirectX11 instance;
+    return instance;
+}
+
 //--------------------------------------------------------------------------------------
 // DirectX11::~DirectX11関数：デストラクタ
 //--------------------------------------------------------------------------------------
@@ -481,4 +487,9 @@ void DirectX11::Render()
     m_D2DDeviceContext->EndDraw();
 
     m_DXGISwapChain1->Present(0, 0);
+}
+
+Microsoft::WRL::ComPtr<ID3D11DeviceContext> DirectX11::GetDeviceContext3D()
+{
+    return m_D3DDeviceContext;
 }
