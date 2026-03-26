@@ -3,6 +3,9 @@
 #include <windows.h>
 #pragma comment(lib,"winmm.lib")
 
+//--------------------------------------------------------------------------------------
+// WindowÉNÉâÉXÅFWindowä÷åW
+//--------------------------------------------------------------------------------------
 class Window
 {
 public:
@@ -11,12 +14,14 @@ public:
     void CalculationFps();
     void CalculationSleep();
     void CalculationFrameTime();
+    void JudgeWindowActive();//Åö---í«â¡---
 
     static HWND GethWnd();
     static int GetClientWidth();
     static int GetClientHeight();
     static double GetFps();
     static double GetFrameTime();
+    static bool GetWindowActive();//Åö---í«â¡---
 private:
     LARGE_INTEGER m_freq = { 0 };
     LARGE_INTEGER m_starttime = { 0 };
@@ -30,4 +35,5 @@ private:
     static int g_iClientHeight;
     static double g_dFps;
     static double g_dFrameTime;
+    static bool g_bWindowActive;//Åö---í«â¡---
 };

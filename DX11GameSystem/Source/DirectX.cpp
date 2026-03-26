@@ -387,19 +387,24 @@ void DirectX11::Render()
 {
     m_D3DDeviceContext->ClearRenderTargetView(m_D3DRenderTargetView.Get(), DirectX::Colors::Aquamarine);//m_D3DRenderTargetViewではなくm_D3DRenderTargetView.Get()
 
-    //------------------------------------------------------------
-    //計算
-    //------------------------------------------------------------
-    static FLOAT fAngle = 0;
-    fAngle += static_cast<FLOAT>(Window::GetFrameTime() / 1000.0);
-    m_matWorld = DirectX::XMMatrixRotationY(fAngle);//Y軸回転
-
+    //--------------------------★変更↓--------------------------
     //------------------------------------------------------------
     // 文字操作
     //------------------------------------------------------------
     //FPS表示用
     WCHAR wcText1[256] = { 0 };
     swprintf(wcText1, 256, L"FPS=%lf", Window::GetFps());
+    //WindowActive表示用
+    WCHAR wcText2[256] = { 0 };
+    if (Window::GetWindowActive())
+    {
+        swprintf(wcText2, 256, L"ウィンドウがアクティブです。");
+    }
+    else
+    {
+        swprintf(wcText2, 256, L"ウィンドウがアクティブではありません。");
+    }
+    //--------------------------★変更↑--------------------------
 
     //------------------------------------------------------------
     // 3D描画
@@ -410,19 +415,22 @@ void DirectX11::Render()
     cb.world = DirectX::XMMatrixTranspose(m_matWorld);
     cb.view = DirectX::XMMatrixTranspose(m_matView);
     cb.projection = DirectX::XMMatrixTranspose(m_matProjection);
-    cb.lightpos = DirectX::XMVectorSet(-1, 1, -2, 1);//★---追加---
+    cb.lightpos = DirectX::XMVectorSet(-1, 1, -2, 1);
     m_D3DDeviceContext->Map(m_D3DConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
     memcpy(msr.pData, (void*)(&cb), sizeof(cb));
     m_D3DDeviceContext->Unmap(m_D3DConstantBuffer.Get(), 0);
     //球体の描画
     m_D3DDeviceContext->DrawIndexed(m_iIndexNum, 0, 0);
 
+    //--------------------------★変更↓--------------------------
     //------------------------------------------------------------
     // 2D描画
     //------------------------------------------------------------
     m_D2DDeviceContext->BeginDraw();
     m_D2DDeviceContext->DrawText(wcText1, ARRAYSIZE(wcText1) - 1, m_DWriteTextFormat.Get(), D2D1::RectF(0, 0, 800, 20), m_D2DSolidBrush.Get(), D2D1_DRAW_TEXT_OPTIONS_NONE);//m_DWriteTextFormatではなくm_DWriteTextFormat.Get()
+    m_D2DDeviceContext->DrawText(wcText2, ARRAYSIZE(wcText2) - 1, m_DWriteTextFormat.Get(), D2D1::RectF(0, 20, 800, 40), m_D2DSolidBrush.Get(), D2D1_DRAW_TEXT_OPTIONS_NONE);//m_DWriteTextFormatではなくm_DWriteTextFormat.Get()
     m_D2DDeviceContext->EndDraw();
+    //--------------------------★変更↑--------------------------
 
     m_DXGISwapChain1->Present(0, 0);
 }

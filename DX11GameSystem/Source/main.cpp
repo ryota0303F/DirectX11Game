@@ -5,10 +5,11 @@
 // 静的メンバ
 //--------------------------------------------------------------------------------------
 HWND Window::g_hWnd = nullptr;//ウィンドウハンドル
-int Window::g_iClientWidth = 1280;//クライアント領域の横幅
-int Window::g_iClientHeight = 720;//クライアント領域の高さ
+int Window::g_iClientWidth = 800;//クライアント領域の横幅
+int Window::g_iClientHeight = 600;//クライアント領域の高さ
 double Window::g_dFps = 0;//FPS
 double Window::g_dFrameTime = 0;//1フレームあたりの時間
+bool Window::g_bWindowActive = true;//ウィンドウがアクティブかどうか判定//★---追加---
 
 //--------------------------------------------------------------------------------------
 // 前方宣言
@@ -46,6 +47,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
         }
         else
         {
+            win.JudgeWindowActive();//★---追加---
+
             win.CalculationFps();
 
             win.CalculationFrameTime();
@@ -110,7 +113,7 @@ HRESULT Window::InitWindow(HINSTANCE hInstance, int nCmdShow)
 
     RECT rc = { 0, 0, g_iClientWidth, g_iClientHeight };
     AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
-    g_hWnd = CreateWindow(L"WindowClass", L"DirectXプログラミング",//★---変更---
+    g_hWnd = CreateWindow(L"WindowClass", L"DirectXプログラミング",
         WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
         CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, hInstance,
         nullptr);
@@ -187,6 +190,20 @@ void Window::CalculationFrameTime()
     m_frametime_a = m_frametime_b;
 }
 
+//--------------------------★追加↓--------------------------
+//--------------------------------------------------------------------------------------
+// Window::JudgeWindowActive()関数：ウィンドウがアクティブかどうか判定
+//--------------------------------------------------------------------------------------
+void Window::JudgeWindowActive()
+{
+    HWND hWnd;
+    hWnd = GetActiveWindow();
+
+    if (g_hWnd == hWnd) g_bWindowActive = true;
+    else g_bWindowActive = false;
+}
+//--------------------------★追加↑--------------------------
+
 //--------------------------------------------------------------------------------------
 // Window::GethWnd()関数：hWndの取得
 //--------------------------------------------------------------------------------------
@@ -225,4 +242,13 @@ double Window::GetFps()
 double Window::GetFrameTime()
 {
     return g_dFrameTime;
+}
+
+//--------------------------★追加↓--------------------------
+//--------------------------------------------------------------------------------------
+// Window::GetWindowActive()関数：g_bWindowActiveの取得
+//--------------------------------------------------------------------------------------
+bool Window::GetWindowActive()
+{
+    return g_bWindowActive;
 }
