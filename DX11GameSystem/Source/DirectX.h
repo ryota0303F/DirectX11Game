@@ -22,6 +22,7 @@ struct SimpleVertex
 {
     DirectX::XMFLOAT3 Pos;
     DirectX::XMFLOAT3 Normal;
+    DirectX::XMFLOAT4 Color;
 };
 
 struct ConstantBuffer
@@ -45,13 +46,19 @@ public:
     HRESULT InitDevice();
     void Render();
 
-    Microsoft::WRL::ComPtr<ID3D11DeviceContext> GetDeviceContext3D();
+    ID3D11DeviceContext* GetDeviceContext3D();
+    ID3D11Device* GetDevice3D();
+    ID3DBlob* GetVertexShaderBlob();
+    ID3D11VertexShader* GetVertexShader();
+    ID3D11PixelShader* GetPixelShader();
+    ID3D11Buffer** GetConstantBuffer();
 private:
     DirectX11();
 
     //------------------------------------------------------------
     // DirectX11Ç∆Direct2D 1.1ÇÃèâä˙âª
     //------------------------------------------------------------
+    Microsoft::WRL::ComPtr<ID3D11Device> m_D3DDevice;
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_D3DDeviceContext;
     Microsoft::WRL::ComPtr<ID2D1DeviceContext> m_D2DDeviceContext;
     Microsoft::WRL::ComPtr<IDXGISwapChain1> m_DXGISwapChain1;
@@ -59,8 +66,9 @@ private:
     Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_D3DRenderTargetView;
     Microsoft::WRL::ComPtr<ID3D11VertexShader> m_D3DVertexShader;
     Microsoft::WRL::ComPtr<ID3D11PixelShader> m_D3DPixelShader;
-    Microsoft::WRL::ComPtr<ID3D11Buffer> m_D3DVertexBuffer;
+
     Microsoft::WRL::ComPtr<ID3D11Buffer> m_D3DConstantBuffer;
+    Microsoft::WRL::ComPtr<ID3DBlob> m_D3DBlobVS;
     DirectX::XMMATRIX m_matWorld;
     DirectX::XMMATRIX m_matView;
     DirectX::XMMATRIX m_matProjection;
@@ -79,7 +87,8 @@ private:
     Microsoft::WRL::ComPtr<IDWriteTextFormat> m_DWriteTextFormat;
     Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> m_D2DSolidBrush;
 
-    GameMesh mGameMesh;
+    GameMesh mGameMesh1;
+    GameMesh mGameMesh2;
 };
 
 #define DX11 DirectX11::Instance()
