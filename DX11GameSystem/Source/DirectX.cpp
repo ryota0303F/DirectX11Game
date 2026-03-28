@@ -306,10 +306,10 @@ HRESULT DirectX11::InitDevice()
 
     //コンスタントバッファの作成
     D3D11_BUFFER_DESC bd = {};
-    bd.Usage = D3D11_USAGE_DYNAMIC;
-    bd.ByteWidth = sizeof(SimpleVertex) * m_iVertexNum;
-    bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-    bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    //bd.Usage = D3D11_USAGE_DYNAMIC;
+    //bd.ByteWidth = sizeof(SimpleVertex) * m_iVertexNum;
+    //bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+    //bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     bd.Usage = D3D11_USAGE_DYNAMIC;
     bd.ByteWidth = sizeof(ConstantBuffer);
     bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
@@ -470,11 +470,13 @@ void DirectX11::Render()
 
     //カメラの更新
     ConstantBuffer cb;
-    cb.world = DirectX::XMMatrixTranspose(m_matWorld);
+    cb.world = DirectX::XMMatrixTranslation(0, 0, 0);
+    //cb.world = DirectX::XMMatrixTranspose(m_matWorld);
     cb.view = DirectX::XMMatrixTranspose(m_matView);
     cb.projection = DirectX::XMMatrixTranspose(m_matProjection);
     cb.lightpos = DirectX::XMVectorSet(-1, 1, -2, 1);
     cb.eyepos = vecEye;//★---追加---
+
     m_D3DDeviceContext->Map(m_D3DConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
     memcpy(msr.pData, (void*)(&cb), sizeof(cb));
     m_D3DDeviceContext->Unmap(m_D3DConstantBuffer.Get(), 0);
