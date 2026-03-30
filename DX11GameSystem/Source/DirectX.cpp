@@ -404,6 +404,10 @@ void DirectX11::Render()
     static FLOAT fCameraY = fDistance * sin(fDelta);//カメラの位置Y座標
     static FLOAT fCameraZ = fDistance * cos(fDelta) * sin(fTheta);//カメラの位置Z座標
 
+    static FLOAT fCameraAtX = 0;
+    static FLOAT fCameraAtY = 0;
+    static FLOAT fCameraAtZ = 0;
+
     //------------------------------------------------------------
     // キー入力関係
     //------------------------------------------------------------
@@ -445,6 +449,15 @@ void DirectX11::Render()
     fCameraY = fDistance * sin(fDelta);
     fCameraZ = fDistance * cos(fDelta) * sin(fTheta);
 
+    if (GetAsyncKeyState('A') & 0x8000)
+    {
+        fCameraAtX -= 0.01f;
+    }
+    if (GetAsyncKeyState('D') & 0x8000)
+    {
+        fCameraAtX += 0.01f;
+    }
+
     //------------------------------------------------------------
     // 文字操作
     //------------------------------------------------------------
@@ -464,7 +477,7 @@ void DirectX11::Render()
     D3D11_MAPPED_SUBRESOURCE msr;
     //ビューマトリックスの設定
     DirectX::XMVECTOR vecEye = DirectX::XMVectorSet(fCameraX, fCameraY, fCameraZ, 0.0f);//カメラの位置
-    DirectX::XMVECTOR vecFocus = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);//カメラの焦点
+    DirectX::XMVECTOR vecFocus = DirectX::XMVectorSet(fCameraAtX, fCameraAtY, fCameraAtZ, 0.0f);//カメラの焦点
     DirectX::XMVECTOR vecUp = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);//カメラの上方向
     m_matView = DirectX::XMMatrixLookAtLH(vecEye, vecFocus, vecUp);
 
@@ -482,6 +495,20 @@ void DirectX11::Render()
     m_D3DDeviceContext->Unmap(m_D3DConstantBuffer.Get(), 0);
 
     mGameMesh1.Draw();
+
+    ConstantBuffer cb1;
+    cb1.world = DirectX::XMMatrixTranslation(0, -1, 0);
+    //cb.world = DirectX::XMMatrixTranspose(m_matWorld);
+    cb1.view = DirectX::XMMatrixTranspose(m_matView);
+    cb1.projection = DirectX::XMMatrixTranspose(m_matProjection);
+    cb1.lightpos = DirectX::XMVectorSet(-1, 1, -2, 1);
+    cb1.eyepos = vecEye;//★---追加---
+
+    m_D3DDeviceContext->Map(m_D3DConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
+    memcpy(msr.pData, (void*)(&cb1), sizeof(cb1));
+    m_D3DDeviceContext->Unmap(m_D3DConstantBuffer.Get(), 0);
+
+    mGameMesh2.Draw();
     //DirectX::XMFLOAT3 pos;
     //pos.x = 0; pos.y = 0; pos.z = 0;
     //DirectX::XMFLOAT3 scale;

@@ -16,7 +16,7 @@ struct VS_OUTPUT
 //--------------------------------------------------------------------------------------
 // バーテックスシェーダ
 //--------------------------------------------------------------------------------------
-VS_OUTPUT main(float4 pos : POSITION, float3 normal : NORMAL)
+VS_OUTPUT main(float4 pos : POSITION, float3 normal : NORMAL, float3 color : COLOR)
 {
     VS_OUTPUT output = (VS_OUTPUT) 0;
     output.pos = mul(pos, world);
