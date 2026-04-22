@@ -26,28 +26,19 @@ void GameMesh::Load()
 
 
     //頂点バッファ
-    std::vector<SimpleVertex> mVertices(m_iVertexNum);
+    std::vector<SimpleVertex> mVertices;
     //インデックスバッファ
-    std::vector<WORD> mIndices(m_iIndexNum);
+    std::vector<WORD> mIndices;
 
     //バーテックスバッファの作成
-    for (int v = 0; v <= m_iVMax; v++)
-    {
-        for (int u = 0; u < m_iUMax; u++)
-        {
-            double dTheta = DirectX::XMConvertToRadians(180.0f * v / m_iVMax);
-            double dPhi = DirectX::XMConvertToRadians(360.0f * u / m_iUMax);
-            FLOAT fX = static_cast<FLOAT>(sin(dTheta) * cos(dPhi));
-            FLOAT fY = static_cast<FLOAT>(cos(dTheta));
-            FLOAT fZ = static_cast<FLOAT>(sin(dTheta) * sin(dPhi));
-            mVertices[m_iUMax * v + u].Pos = DirectX::XMFLOAT3(fX, fY, fZ);
-            mVertices[m_iUMax * v + u].Normal = DirectX::XMFLOAT3(fX, fY, fZ);
-            mVertices[m_iUMax * v + u].Color = DirectX::XMFLOAT3(1.0f, 0, 1.0f);
-        }
-    }
+    mVertices.push_back(SimpleVertex{ DirectX::XMFLOAT3(-0.5f, 0.5f, 0.0f) ,DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f) ,DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f) });
+    mVertices.push_back(SimpleVertex{ DirectX::XMFLOAT3(0.5f, 0.5f, 0.0f) ,DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f) ,DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f) });
+    mVertices.push_back(SimpleVertex{ DirectX::XMFLOAT3(-0.5f, -0.5f, 0.0f) ,DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f) ,DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f) });
+    mVertices.push_back(SimpleVertex{ DirectX::XMFLOAT3(0.5f, -0.5f, 0.0f) ,DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f) ,DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f) });
+
     D3D11_BUFFER_DESC bd = {};
     bd.Usage = D3D11_USAGE_DYNAMIC;
-    bd.ByteWidth = sizeof(SimpleVertex) * m_iVertexNum;
+    bd.ByteWidth = sizeof(SimpleVertex) * mVertices.size();
     bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
@@ -58,29 +49,15 @@ void GameMesh::Load()
         return;
 
     //インデックスバッファの作成
-    int i = 0;
-    for (int v = 0; v < m_iVMax; v++)
-    {
-        for (int u = 0; u <= m_iUMax; u++)
-        {
-            if (u == m_iUMax)
-            {
-                mIndices[i] = v * m_iUMax;
-                i++;
-                mIndices[i] = (v + 1) * m_iUMax;
-                i++;
-            }
-            else
-            {
-                mIndices[i] = (v * m_iUMax) + u;
-                i++;
-                mIndices[i] = mIndices[i - 1] + m_iUMax;
-                i++;
-            }
-        }
-    }
+    mIndices.push_back(0);
+    mIndices.push_back(2);
+    mIndices.push_back(1);
+    mIndices.push_back(2);
+    mIndices.push_back(3);
+    mIndices.push_back(1);
+
     bd.Usage = D3D11_USAGE_DEFAULT;
-    bd.ByteWidth = sizeof(WORD) * m_iIndexNum;
+    bd.ByteWidth = sizeof(WORD) * mIndices.size();
     bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
     bd.CPUAccessFlags = 0;
     sub.pSysMem = &mIndices.front();
@@ -128,7 +105,7 @@ void GameMesh::Draw()
     deviceContext3D->PSSetConstantBuffers(0, 1, constantBuffer);
 
     //球体の描画
-    deviceContext3D->DrawIndexed(m_iIndexNum, 0, 0);
+    deviceContext3D->DrawIndexed(6, 0, 0);
 }
 
 void GameMesh::Draw(ConstantBuffer cb,DirectX::XMFLOAT3 pos, DirectX::XMFLOAT3 scale, DirectX::XMFLOAT3 degree)

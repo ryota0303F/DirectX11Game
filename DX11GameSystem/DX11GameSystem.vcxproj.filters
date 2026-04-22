@@ -30,6 +30,12 @@
     <ClCompile Include="Source\GameMesh.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Texture.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Camera.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\main.h">
@@ -39,6 +45,12 @@
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="Source\GameMesh.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Texture.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Camera.h">
       <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>

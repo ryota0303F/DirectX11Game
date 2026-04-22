@@ -1,5 +1,8 @@
 #include "Main.h"
 #include "DirectX.h"
+#define D3DX_PI ((FLOAT) 3.141592654f) 
+#define D3DXToRadian( degree ) ((degree) * (D3DX_PI / 180.0f))
+#define D3DXToDegree( radian ) ((radian) * (180.0f / D3DX_PI))
 
 //--------------------------------------------------------------------------------------
 // DirectX11::DirectX11()関数：コンストラクタ
@@ -336,8 +339,13 @@ HRESULT DirectX11::InitDevice()
     //ワールドマトリックスの設定
     m_matWorld = DirectX::XMMatrixIdentity();
 
+    float    fov = DirectX::XMConvertToRadians(45.0f);
+    float    aspect = 1280 / 720;
+    float    nearZ = 0.1f;
+    float    farZ = 100.0f;
+
     //プロジェクションマトリックスの設定
-    m_matProjection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PIDIV4, static_cast<FLOAT>(Window::GetClientWidth()) / static_cast<FLOAT>(Window::GetClientHeight()), 0.01f, 100.0f);//★---変更---
+    m_matProjection = DirectX::XMMatrixPerspectiveFovLH(fov, aspect, nearZ, farZ);
 
     //シェーダのセット
     //m_D3DDeviceContext->VSSetShader(m_D3DVertexShader.Get(), nullptr, 0);
@@ -452,9 +460,11 @@ void DirectX11::Render()
     if (GetAsyncKeyState('A') & 0x8000)
     {
         fCameraAtX -= 0.01f;
+        fCameraX -= 0.01f;
     }
     if (GetAsyncKeyState('D') & 0x8000)
     {
+        fCameraX += 0.01f;
         fCameraAtX += 0.01f;
     }
 
@@ -482,16 +492,16 @@ void DirectX11::Render()
     m_matView = DirectX::XMMatrixLookAtLH(vecEye, vecFocus, vecUp);
 
     //カメラの更新
-    ConstantBuffer cb;
-    cb.world = DirectX::XMMatrixTranslation(0, 0, 0);
+    ConstantBuffer cb1;
+    cb1.world = DirectX::XMMatrixTranslation(0, 0, 0);
     //cb.world = DirectX::XMMatrixTranspose(m_matWorld);
-    cb.view = DirectX::XMMatrixTranspose(m_matView);
-    cb.projection = DirectX::XMMatrixTranspose(m_matProjection);
-    cb.lightpos = DirectX::XMVectorSet(-1, 1, -2, 1);
-    cb.eyepos = vecEye;//★---追加---
+    cb1.view = DirectX::XMMatrixTranspose(m_matView);
+    cb1.projection = DirectX::XMMatrixTranspose(m_matProjection);
+    cb1.lightpos = DirectX::XMVectorSet(-1, 1, -2, 1);
+    cb1.eyepos = vecEye;//★---追加---
 
     m_D3DDeviceContext->Map(m_D3DConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
-    memcpy(msr.pData, (void*)(&cb), sizeof(cb));
+    memcpy(msr.pData, (void*)(&cb1), sizeof(cb1));
     m_D3DDeviceContext->Unmap(m_D3DConstantBuffer.Get(), 0);
 
     mGameMesh1.Draw();

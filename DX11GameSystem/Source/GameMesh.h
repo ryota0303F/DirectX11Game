@@ -30,8 +30,4 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> mD3DInputLayout;
 	//ラスタライザの作成
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> mD3DRasterizerState;
-	const int m_iUMax = 48;
-	const int m_iVMax = 24;
-	int m_iVertexNum = m_iUMax * (m_iVMax + 1);
-	int m_iIndexNum = 2 * m_iVMax * (m_iUMax + 1);
 };
