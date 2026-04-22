@@ -11,6 +11,7 @@ struct VS_OUTPUT
 {
     float4 pos : SV_POSITION;
     float3 normal : NORMAL0;
+    float3 color : COLOR;
 };
 
 //--------------------------------------------------------------------------------------
@@ -19,7 +20,7 @@ struct VS_OUTPUT
 float4 main(VS_OUTPUT input) : SV_TARGET
 {
     //アンビエント
-    float3 ambient = float3(1.0f, 1.0f, 0.0f) * 0.6f;
+    float3 ambient = input.color * 0.6f;
 
     //ディフューズ
     float3 L = normalize(lightpos.xyz);

@@ -496,20 +496,20 @@ void DirectX11::Render()
 
     mGameMesh1.Draw();
 
-    ConstantBuffer cb1;
-    cb1.world = DirectX::XMMatrixTranslation(0, -1, 0);
-    //cb.world = DirectX::XMMatrixTranspose(m_matWorld);
-    cb1.view = DirectX::XMMatrixTranspose(m_matView);
-    cb1.projection = DirectX::XMMatrixTranspose(m_matProjection);
-    cb1.lightpos = DirectX::XMVectorSet(-1, 1, -2, 1);
-    cb1.eyepos = vecEye;//š---’Ç‰Á---
+    //ConstantBuffer cb1;
+    //cb1.world = DirectX::XMMatrixTranslation(0, -1, 0);
+    ////cb.world = DirectX::XMMatrixTranspose(m_matWorld);
+    //cb1.view = DirectX::XMMatrixTranspose(m_matView);
+    //cb1.projection = DirectX::XMMatrixTranspose(m_matProjection);
+    //cb1.lightpos = DirectX::XMVectorSet(-1, 1, -2, 1);
+    //cb1.eyepos = vecEye;//š---’Ç‰Á---
 
-    m_D3DDeviceContext->Map(m_D3DConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
-    memcpy(msr.pData, (void*)(&cb1), sizeof(cb1));
-    m_D3DDeviceContext->Unmap(m_D3DConstantBuffer.Get(), 0);
+    //m_D3DDeviceContext->Map(m_D3DConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
+    //memcpy(msr.pData, (void*)(&cb1), sizeof(cb1));
+    //m_D3DDeviceContext->Unmap(m_D3DConstantBuffer.Get(), 0);
 
-    mGameMesh2.Draw();
-    //DirectX::XMFLOAT3 pos;
+    //mGameMesh2.Draw();
+    ////DirectX::XMFLOAT3 pos;
     //pos.x = 0; pos.y = 0; pos.z = 0;
     //DirectX::XMFLOAT3 scale;
     //scale.x = 1; scale.y = 1; scale.z = 1;

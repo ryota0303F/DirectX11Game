@@ -11,6 +11,7 @@ struct VS_OUTPUT
 {
     float4 pos : SV_POSITION;
     float3 normal : NORMAL0;
+    float3 color : COLOR;
 };
 
 //--------------------------------------------------------------------------------------
@@ -23,5 +24,6 @@ VS_OUTPUT main(float4 pos : POSITION, float3 normal : NORMAL, float3 color : COL
     output.pos = mul(output.pos, view);
     output.pos = mul(output.pos, projection);
     output.normal = mul(normal, world);
+    output.color = color;
     return output;
 }

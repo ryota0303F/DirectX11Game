@@ -14,7 +14,7 @@ void GameMesh::Load()
         { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
         //5番目のパラメータ：先頭からのバイト数4バイト(FLAOT)×3(RGB)=12
         { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
     };
     UINT uiElements = ARRAYSIZE(layout);
 
@@ -42,6 +42,7 @@ void GameMesh::Load()
             FLOAT fZ = static_cast<FLOAT>(sin(dTheta) * sin(dPhi));
             mVertices[m_iUMax * v + u].Pos = DirectX::XMFLOAT3(fX, fY, fZ);
             mVertices[m_iUMax * v + u].Normal = DirectX::XMFLOAT3(fX, fY, fZ);
+            mVertices[m_iUMax * v + u].Color = DirectX::XMFLOAT3(1.0f, 0, 1.0f);
         }
     }
     D3D11_BUFFER_DESC bd = {};
