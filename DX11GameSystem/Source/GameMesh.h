@@ -20,7 +20,6 @@ class GameMesh
 public:
 	void Load();
 	void Draw();
-	void Draw(ConstantBuffer cb, DirectX::XMFLOAT3 pos, DirectX::XMFLOAT3 scale, DirectX::XMFLOAT3 degree);
 private:
 	//バーテックスバッファ
 	Microsoft::WRL::ComPtr<ID3D11Buffer> mD3DVertexBuffer;
