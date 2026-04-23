@@ -53,8 +53,8 @@ void GameMesh::Load()
     mIndices.push_back(2);
     mIndices.push_back(1);
     mIndices.push_back(2);
-    mIndices.push_back(3);
     mIndices.push_back(1);
+    mIndices.push_back(3);
 
     bd.Usage = D3D11_USAGE_DEFAULT;
     bd.ByteWidth = sizeof(WORD) * mIndices.size();
