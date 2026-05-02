@@ -11,11 +11,19 @@
 class Camera
 {
 public:
+	static Camera& Instance();
+	~Camera();
 	void Update();
+	DirectX::XMMATRIX GetMatrix();
+	DirectX::XMMATRIX* GetMatrixPtr();
+	DirectX::XMVECTOR GetEye();
 private:
-	DirectX::XMVECTOR vecEy;
+	Camera();
+	DirectX::XMVECTOR vecEye;
 	DirectX::XMVECTOR vecFocus;
 	DirectX::XMVECTOR vecUp;
 
 	DirectX::XMMATRIX m_matView;
 };
+
+#define GameCamera Camera::Instance()

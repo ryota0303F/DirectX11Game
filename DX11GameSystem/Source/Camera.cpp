@@ -1,5 +1,20 @@
 #include "Camera.h"
 
+Camera& Camera::Instance()
+{
+    static Camera instance;
+    return instance;
+}
+
+Camera::Camera()
+{
+
+}
+
+Camera::~Camera()
+{
+}
+
 void Camera::Update()
 {
     static FLOAT fTheta = 5.0f;//カメラ横方向角度//★---変更---
@@ -15,8 +30,75 @@ void Camera::Update()
     static FLOAT fCameraAtY = 0;
     static FLOAT fCameraAtZ = 0;
 
-    DirectX::XMVECTOR vecEye = DirectX::XMVectorSet(fCameraX, fCameraY, fCameraZ, 0.0f);//カメラの位置
-    DirectX::XMVECTOR vecFocus = DirectX::XMVectorSet(fCameraAtX, fCameraAtY, fCameraAtZ, 0.0f);//カメラの焦点
-    DirectX::XMVECTOR vecUp = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);//カメラの上方向
+    //------------------------------------------------------------
+// キー入力関係
+//------------------------------------------------------------
+//マウス右クリック
+    if (GetAsyncKeyState(VK_RBUTTON) & 0x8000 && bMouseR_drag == false)
+    {
+        bMouseR_drag = true;//マウス右ドラッグフラグ
+
+        GetCursorPos(&mousepoint_a);//マウスのスクリーン座標取得
+    }
+    else if (!(GetAsyncKeyState(VK_RBUTTON) & 0x8000))
+    {
+        bMouseR_drag = false;//マウス右ドラッグフラグ
+    }
+    //マウス右ドラッグ
+    if (bMouseR_drag)
+    {
+        GetCursorPos(&mousepoint_b);//マウスのスクリーン座標取得
+
+        fTheta -= (mousepoint_b.x - mousepoint_a.x) * 0.003f;//カメラ横方向角度変更
+
+        if (fDelta + (mousepoint_b.y - mousepoint_a.y) * 0.003f >= DirectX::XM_PI / 2.0f - 0.0001f)
+        {
+            fDelta = DirectX::XM_PI / 2.0f - 0.0001f;//カメラ縦方向角度変更
+        }
+        else if (fDelta + (mousepoint_b.y - mousepoint_a.y) * 0.003f <= -DirectX::XM_PI / 2.0f + 0.0001f)
+        {
+            fDelta = -DirectX::XM_PI / 2.0f + 0.0001f;//カメラ縦方向角度変更
+        }
+        else
+        {
+            fDelta += (mousepoint_b.y - mousepoint_a.y) * 0.003f;//カメラ縦方向角度変更
+        }
+
+        GetCursorPos(&mousepoint_a);//マウスのスクリーン座標取得
+    }
+    //カメラ位置決定
+    fCameraX = fDistance * cos(fDelta) * cos(fTheta);
+    fCameraY = fDistance * sin(fDelta);
+    fCameraZ = fDistance * cos(fDelta) * sin(fTheta);
+
+    if (GetAsyncKeyState('A') & 0x8000)
+    {
+        fCameraAtX -= 0.01f;
+        fCameraX -= 0.01f;
+    }
+    if (GetAsyncKeyState('D') & 0x8000)
+    {
+        fCameraX += 0.01f;
+        fCameraAtX += 0.01f;
+    }
+
+    vecEye = DirectX::XMVectorSet(fCameraX, fCameraY, fCameraZ, 0.0f);//カメラの位置
+    vecFocus = DirectX::XMVectorSet(fCameraAtX, fCameraAtY, fCameraAtZ, 0.0f);//カメラの焦点
+    vecUp = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);//カメラの上方向
     m_matView = DirectX::XMMatrixLookAtLH(vecEye, vecFocus, vecUp);
+}
+
+DirectX::XMMATRIX Camera::GetMatrix()
+{
+    return m_matView;
+}
+
+DirectX::XMMATRIX* Camera::GetMatrixPtr()
+{
+    return &m_matView;
+}
+
+DirectX::XMVECTOR Camera::GetEye()
+{
+    return vecEye;
 }

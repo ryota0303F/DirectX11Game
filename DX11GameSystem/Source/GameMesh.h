@@ -29,4 +29,5 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> mD3DInputLayout;
 	//ラスタライザの作成
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> mD3DRasterizerState;
+	
 };

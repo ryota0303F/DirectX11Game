@@ -1,5 +1,6 @@
 #include "Main.h"
 #include "DirectX.h"
+#include "Camera.h"
 
 //--------------------------------------------------------------------------------------
 // ê√ìIÉÅÉìÉo
@@ -53,6 +54,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
             win.CalculationFrameTime();
 
+            GameCamera.Update();
+            
             DX11.Render();
 
             win.CalculationSleep();

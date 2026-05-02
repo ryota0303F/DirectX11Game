@@ -1,5 +1,6 @@
 #include "Main.h"
 #include "DirectX.h"
+#include "Camera.h"
 #define D3DX_PI ((FLOAT) 3.141592654f) 
 #define D3DXToRadian( degree ) ((degree) * (D3DX_PI / 180.0f))
 #define D3DXToDegree( radian ) ((radian) * (180.0f / D3DX_PI))
@@ -399,97 +400,25 @@ void DirectX11::Render()
 {
     m_D3DDeviceContext->ClearRenderTargetView(m_D3DRenderTargetView.Get(), DirectX::Colors::Aquamarine);//m_D3DRenderTargetViewではなくm_D3DRenderTargetView.Get()
 
-    //------------------------------------------------------------
-    // 初期設定
-    //------------------------------------------------------------
-    static FLOAT fTheta = 5.0f;//カメラ横方向角度//★---変更---
-    static FLOAT fDelta = -0.06f;//カメラ縦方向角度//★---変更---
-    static bool bMouseR_drag;//マウス右ドラッグフラグ
-    static FLOAT fDistance = 4;//カメラ位置から焦点までの距離
-    static POINT mousepoint_a;//マウス位置
-    static POINT mousepoint_b;//マウス位置
-    static FLOAT fCameraX = fDistance * cos(fDelta) * cos(fTheta);//カメラの位置X座標
-    static FLOAT fCameraY = fDistance * sin(fDelta);//カメラの位置Y座標
-    static FLOAT fCameraZ = fDistance * cos(fDelta) * sin(fTheta);//カメラの位置Z座標
-
-    static FLOAT fCameraAtX = 0;
-    static FLOAT fCameraAtY = 0;
-    static FLOAT fCameraAtZ = 0;
-
-    //------------------------------------------------------------
-    // キー入力関係
-    //------------------------------------------------------------
-    //マウス右クリック
-    if (GetAsyncKeyState(VK_RBUTTON) & 0x8000 && bMouseR_drag == false && Window::GetWindowActive() == true)
-    {
-        bMouseR_drag = true;//マウス右ドラッグフラグ
-
-        GetCursorPos(&mousepoint_a);//マウスのスクリーン座標取得
-    }
-    else if (!(GetAsyncKeyState(VK_RBUTTON) & 0x8000))
-    {
-        bMouseR_drag = false;//マウス右ドラッグフラグ
-    }
-    //マウス右ドラッグ
-    if (bMouseR_drag)
-    {
-        GetCursorPos(&mousepoint_b);//マウスのスクリーン座標取得
-
-        fTheta -= (mousepoint_b.x - mousepoint_a.x) * 0.003f;//カメラ横方向角度変更
-
-        if (fDelta + (mousepoint_b.y - mousepoint_a.y) * 0.003f >= DirectX::XM_PI / 2.0f - 0.0001f)
-        {
-            fDelta = DirectX::XM_PI / 2.0f - 0.0001f;//カメラ縦方向角度変更
-        }
-        else if (fDelta + (mousepoint_b.y - mousepoint_a.y) * 0.003f <= -DirectX::XM_PI / 2.0f + 0.0001f)
-        {
-            fDelta = -DirectX::XM_PI / 2.0f + 0.0001f;//カメラ縦方向角度変更
-        }
-        else
-        {
-            fDelta += (mousepoint_b.y - mousepoint_a.y) * 0.003f;//カメラ縦方向角度変更
-        }
-
-        GetCursorPos(&mousepoint_a);//マウスのスクリーン座標取得
-    }
-    //カメラ位置決定
-    fCameraX = fDistance * cos(fDelta) * cos(fTheta);
-    fCameraY = fDistance * sin(fDelta);
-    fCameraZ = fDistance * cos(fDelta) * sin(fTheta);
-
-    if (GetAsyncKeyState('A') & 0x8000)
-    {
-        fCameraAtX -= 0.01f;
-        fCameraX -= 0.01f;
-    }
-    if (GetAsyncKeyState('D') & 0x8000)
-    {
-        fCameraX += 0.01f;
-        fCameraAtX += 0.01f;
-    }
-
-    //------------------------------------------------------------
-    // 文字操作
-    //------------------------------------------------------------
-    //FPS表示用
-    WCHAR wcText1[256] = { 0 };
-    swprintf(wcText1, 256, L"FPS=%lf", Window::GetFps());
-    //カメラ角度表示用
-    WCHAR wcText2[256] = { 0 };
-    swprintf(wcText2, 256, L"fTheta=%f, fDelta=%f", fTheta, fDelta);
-    //カメラ位置表示用
-    WCHAR wcText3[256] = { 0 };
-    swprintf(wcText3, 256, L"fCameraX=%f, fCameraY=%f, fCameraZ=%f", fCameraX, fCameraY, fCameraZ);
+    ////------------------------------------------------------------
+    //// 文字操作
+    ////------------------------------------------------------------
+    ////FPS表示用
+    //WCHAR wcText1[256] = { 0 };
+    //swprintf(wcText1, 256, L"FPS=%lf", Window::GetFps());
+    ////カメラ角度表示用
+    //WCHAR wcText2[256] = { 0 };
+    //swprintf(wcText2, 256, L"fTheta=%f, fDelta=%f", fTheta, fDelta);
+    ////カメラ位置表示用
+    //WCHAR wcText3[256] = { 0 };
+    //swprintf(wcText3, 256, L"fCameraX=%f, fCameraY=%f, fCameraZ=%f", fCameraX, fCameraY, fCameraZ);
 
     //------------------------------------------------------------
     // 3D描画
     //------------------------------------------------------------
     D3D11_MAPPED_SUBRESOURCE msr;
     //ビューマトリックスの設定
-    DirectX::XMVECTOR vecEye = DirectX::XMVectorSet(fCameraX, fCameraY, fCameraZ, 0.0f);//カメラの位置
-    DirectX::XMVECTOR vecFocus = DirectX::XMVectorSet(fCameraAtX, fCameraAtY, fCameraAtZ, 0.0f);//カメラの焦点
-    DirectX::XMVECTOR vecUp = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);//カメラの上方向
-    m_matView = DirectX::XMMatrixLookAtLH(vecEye, vecFocus, vecUp);
+    m_matView = GameCamera.GetMatrix();
 
     //カメラの更新
     ConstantBuffer cb1;
@@ -498,7 +427,7 @@ void DirectX11::Render()
     cb1.view = DirectX::XMMatrixTranspose(m_matView);
     cb1.projection = DirectX::XMMatrixTranspose(m_matProjection);
     cb1.lightpos = DirectX::XMVectorSet(-1, 1, -2, 1);
-    cb1.eyepos = vecEye;//★---追加---
+    cb1.eyepos = GameCamera.GetEye();//★---追加---
 
     m_D3DDeviceContext->Map(m_D3DConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
     memcpy(msr.pData, (void*)(&cb1), sizeof(cb1));
@@ -533,9 +462,9 @@ void DirectX11::Render()
     // 2D描画
     //------------------------------------------------------------
     m_D2DDeviceContext->BeginDraw();
-    m_D2DDeviceContext->DrawText(wcText1, ARRAYSIZE(wcText1) - 1, m_DWriteTextFormat.Get(), D2D1::RectF(0, 0, 800, 20), m_D2DSolidBrush.Get(), D2D1_DRAW_TEXT_OPTIONS_NONE);//m_DWriteTextFormatではなくm_DWriteTextFormat.Get()
-    m_D2DDeviceContext->DrawText(wcText2, ARRAYSIZE(wcText2) - 1, m_DWriteTextFormat.Get(), D2D1::RectF(0, 20, 800, 40), m_D2DSolidBrush.Get(), D2D1_DRAW_TEXT_OPTIONS_NONE);//m_DWriteTextFormatではなくm_DWriteTextFormat.Get()
-    m_D2DDeviceContext->DrawText(wcText3, ARRAYSIZE(wcText3) - 1, m_DWriteTextFormat.Get(), D2D1::RectF(0, 40, 800, 60), m_D2DSolidBrush.Get(), D2D1_DRAW_TEXT_OPTIONS_NONE);//m_DWriteTextFormatではなくm_DWriteTextFormat.Get()
+    //m_D2DDeviceContext->DrawText(wcText1, ARRAYSIZE(wcText1) - 1, m_DWriteTextFormat.Get(), D2D1::RectF(0, 0, 800, 20), m_D2DSolidBrush.Get(), D2D1_DRAW_TEXT_OPTIONS_NONE);//m_DWriteTextFormatではなくm_DWriteTextFormat.Get()
+    //m_D2DDeviceContext->DrawText(wcText2, ARRAYSIZE(wcText2) - 1, m_DWriteTextFormat.Get(), D2D1::RectF(0, 20, 800, 40), m_D2DSolidBrush.Get(), D2D1_DRAW_TEXT_OPTIONS_NONE);//m_DWriteTextFormatではなくm_DWriteTextFormat.Get()
+    //m_D2DDeviceContext->DrawText(wcText3, ARRAYSIZE(wcText3) - 1, m_DWriteTextFormat.Get(), D2D1::RectF(0, 40, 800, 60), m_D2DSolidBrush.Get(), D2D1_DRAW_TEXT_OPTIONS_NONE);//m_DWriteTextFormatではなくm_DWriteTextFormat.Get()
     m_D2DDeviceContext->EndDraw();
 
     m_DXGISwapChain1->Present(0, 0);
