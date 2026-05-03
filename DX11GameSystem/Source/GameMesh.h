@@ -1,12 +1,5 @@
 #pragma once
-#pragma comment(lib,"d3d11.lib")
-#pragma comment(lib,"d3dCompiler.lib")
-#pragma comment(lib,"d2d1.lib")
-#pragma comment(lib,"dwrite.lib")
-#include <d3d11_1.h>
-#include <d3dcompiler.h>
-#include <directxmath.h>
-#include <directxcolors.h>
+#include "GraphicsTypes.h"
 #include <vector>
 #include <map>
 #include <string>
@@ -18,7 +11,7 @@ struct ConstantBuffer;
 class GameMesh
 {
 public:
-	void Load();
+	void Load(DirectX::XMFLOAT3 _pos, DirectX::XMFLOAT3 _color);
 	void Draw();
 private:
 	//バーテックスバッファ
@@ -29,5 +22,12 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> mD3DInputLayout;
 	//ラスタライザの作成
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> mD3DRasterizerState;
+	//コンスタンスバッファ
+	Microsoft::WRL::ComPtr<ID3D11Buffer> m_D3DConstantBuffer;
+
+	ConstantBuffer cb;
+	D3D11_MAPPED_SUBRESOURCE msr;
+
+	DirectX::XMFLOAT3 pos;
 	
 };

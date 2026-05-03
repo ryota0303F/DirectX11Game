@@ -1,8 +1,10 @@
 #include"GameMesh.h"
 #include"DirectX.h"
+#include "Camera.h"
 
-void GameMesh::Load()
+void GameMesh::Load(DirectX::XMFLOAT3 _pos, DirectX::XMFLOAT3 _color)
 {
+    pos = _pos;
     HRESULT hr = S_OK;
     ID3D11Device* device = DX11.GetDevice3D();
     ID3D11DeviceContext* deviceContext3D = DX11.GetDeviceContext3D();
@@ -31,10 +33,10 @@ void GameMesh::Load()
     std::vector<WORD> mIndices;
 
     //バーテックスバッファの作成
-    mVertices.push_back(SimpleVertex{ DirectX::XMFLOAT3(-0.5f, 0.5f, 0.0f) ,DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f) ,DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f) });
-    mVertices.push_back(SimpleVertex{ DirectX::XMFLOAT3(0.5f, 0.5f, 0.0f) ,DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f) ,DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f) });
-    mVertices.push_back(SimpleVertex{ DirectX::XMFLOAT3(-0.5f, -0.5f, 0.0f) ,DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f) ,DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f) });
-    mVertices.push_back(SimpleVertex{ DirectX::XMFLOAT3(0.5f, -0.5f, 0.0f) ,DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f) ,DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f) });
+    mVertices.push_back(SimpleVertex{ DirectX::XMFLOAT3(-0.5f, 0.5f, 0.0f) ,DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f) ,_color });
+    mVertices.push_back(SimpleVertex{ DirectX::XMFLOAT3(0.5f, 0.5f, 0.0f) ,DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f) ,_color });
+    mVertices.push_back(SimpleVertex{ DirectX::XMFLOAT3(-0.5f, -0.5f, 0.0f) ,DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f) ,_color });
+    mVertices.push_back(SimpleVertex{ DirectX::XMFLOAT3(0.5f, -0.5f, 0.0f) ,DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f) ,_color });
 
     D3D11_BUFFER_DESC bd = {};
     bd.Usage = D3D11_USAGE_DYNAMIC;
@@ -65,6 +67,20 @@ void GameMesh::Load()
     if (FAILED(hr))
         return;
 
+    //コンスタントバッファの作成
+    //D3D11_BUFFER_DESC bd = {};
+    //bd.Usage = D3D11_USAGE_DYNAMIC;
+    //bd.ByteWidth = sizeof(SimpleVertex) * m_iVertexNum;
+    //bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+    //bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    bd.Usage = D3D11_USAGE_DYNAMIC;
+    bd.ByteWidth = sizeof(ConstantBuffer);
+    bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    hr = device->CreateBuffer(&bd, nullptr, &m_D3DConstantBuffer);
+    if (FAILED(hr))
+        return;
+
     //ラスタライザの作成
     D3D11_RASTERIZER_DESC ras = {};
     //D3D11_FILL_WIREFRAME（ワイヤーフレーム） D3D11_FILL_SOLID（ソリッド）
@@ -83,7 +99,19 @@ void GameMesh::Draw()
     ID3D11DeviceContext* deviceContext3D = DX11.GetDeviceContext3D();
     ID3D11VertexShader* vertexShader = DX11.GetVertexShader();
     ID3D11PixelShader* pixelShader = DX11.GetPixelShader();
-    ID3D11Buffer** constantBuffer = DX11.GetConstantBuffer();
+
+    cb.world = DirectX::XMMatrixTranspose(
+        DirectX::XMMatrixTranslation(pos.x, pos.y, pos.z)
+    );
+    //cb.world = DirectX::XMMatrixTranspose(m_matWorld);
+    cb.view = DirectX::XMMatrixTranspose(GameCamera.GetViewMatrix());
+    cb.projection = DirectX::XMMatrixTranspose(GameCamera.GetProjectionMatrix());
+    cb.lightpos = DirectX::XMVectorSet(-1, 1, -2, 1);
+    cb.eyepos = GameCamera.GetEye();
+
+    deviceContext3D->Map(m_D3DConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
+    memcpy(msr.pData, (void*)(&cb), sizeof(cb));
+    deviceContext3D->Unmap(m_D3DConstantBuffer.Get(), 0);
 
     //ラスタライザの設定
     deviceContext3D->RSSetState(mD3DRasterizerState.Get());
@@ -100,9 +128,9 @@ void GameMesh::Draw()
 
     //シェーダのセット
     deviceContext3D->VSSetShader(vertexShader, nullptr, 0);
-    deviceContext3D->VSSetConstantBuffers(0, 1, constantBuffer);
+    deviceContext3D->VSSetConstantBuffers(0, 1, m_D3DConstantBuffer.GetAddressOf());
     deviceContext3D->PSSetShader(pixelShader, nullptr, 0);
-    deviceContext3D->PSSetConstantBuffers(0, 1, constantBuffer);
+    deviceContext3D->PSSetConstantBuffers(0, 1, m_D3DConstantBuffer.GetAddressOf());
 
     //球体の描画
     deviceContext3D->DrawIndexed(6, 0, 0);

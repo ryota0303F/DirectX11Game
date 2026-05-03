@@ -137,6 +137,7 @@
     <ClInclude Include="Source\Camera.h" />
     <ClInclude Include="Source\DirectX.h" />
     <ClInclude Include="Source\GameMesh.h" />
+    <ClInclude Include="Source\GraphicsTypes.h" />
     <ClInclude Include="Source\main.h" />
     <ClInclude Include="Source\Texture.h" />
   </ItemGroup>

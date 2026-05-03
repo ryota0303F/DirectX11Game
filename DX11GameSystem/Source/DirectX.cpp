@@ -10,9 +10,9 @@
 //--------------------------------------------------------------------------------------
 DirectX11::DirectX11()
 {
-    m_matWorld = DirectX::XMMatrixIdentity();
-    m_matView = DirectX::XMMatrixIdentity();
-    m_matProjection = DirectX::XMMatrixIdentity();
+    //m_matWorld = DirectX::XMMatrixIdentity();
+    //m_matView = DirectX::XMMatrixIdentity();
+    //m_matProjection = DirectX::XMMatrixIdentity();
 }
 
 DirectX11& DirectX11::Instance() {
@@ -309,18 +309,18 @@ HRESULT DirectX11::InitDevice()
     m_D3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
     //コンスタントバッファの作成
-    D3D11_BUFFER_DESC bd = {};
+    //D3D11_BUFFER_DESC bd = {};
+    ////bd.Usage = D3D11_USAGE_DYNAMIC;
+    ////bd.ByteWidth = sizeof(SimpleVertex) * m_iVertexNum;
+    ////bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+    ////bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     //bd.Usage = D3D11_USAGE_DYNAMIC;
-    //bd.ByteWidth = sizeof(SimpleVertex) * m_iVertexNum;
-    //bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+    //bd.ByteWidth = sizeof(ConstantBuffer);
+    //bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     //bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-    bd.Usage = D3D11_USAGE_DYNAMIC;
-    bd.ByteWidth = sizeof(ConstantBuffer);
-    bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-    bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-    hr = m_D3DDevice->CreateBuffer(&bd, nullptr, &m_D3DConstantBuffer);
-    if (FAILED(hr))
-        return hr;
+    //hr = m_D3DDevice->CreateBuffer(&bd, nullptr, &m_D3DConstantBuffer);
+    //if (FAILED(hr))
+    //    return hr;
 
     ////ラスタライザの作成
     //Microsoft::WRL::ComPtr<ID3D11RasterizerState> D3DRasterizerState;
@@ -338,15 +338,15 @@ HRESULT DirectX11::InitDevice()
     //m_D3DDeviceContext->RSSetState(D3DRasterizerState.Get());
 
     //ワールドマトリックスの設定
-    m_matWorld = DirectX::XMMatrixIdentity();
+    //m_matWorld = DirectX::XMMatrixIdentity();
 
-    float    fov = DirectX::XMConvertToRadians(45.0f);
-    float    aspect = 1280 / 720;
-    float    nearZ = 0.1f;
-    float    farZ = 100.0f;
+    //float    fov = DirectX::XMConvertToRadians(45.0f);
+    //float    aspect = 1280 / 720;
+    //float    nearZ = 0.1f;
+    //float    farZ = 100.0f;
 
-    //プロジェクションマトリックスの設定
-    m_matProjection = DirectX::XMMatrixPerspectiveFovLH(fov, aspect, nearZ, farZ);
+    ////プロジェクションマトリックスの設定
+    //m_matProjection = DirectX::XMMatrixPerspectiveFovLH(fov, aspect, nearZ, farZ);
 
     //シェーダのセット
     //m_D3DDeviceContext->VSSetShader(m_D3DVertexShader.Get(), nullptr, 0);
@@ -354,8 +354,8 @@ HRESULT DirectX11::InitDevice()
     //m_D3DDeviceContext->PSSetShader(m_D3DPixelShader.Get(), nullptr, 0);
     //m_D3DDeviceContext->PSSetConstantBuffers(0, 1, m_D3DConstantBuffer.GetAddressOf());
 
-    mGameMesh1.Load();
-    mGameMesh2.Load();
+    mGameMesh1.Load(DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f), DirectX::XMFLOAT3(1.0f, 1.0f, 0.0f));
+    mGameMesh2.Load(DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f), DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f));
 
     //------------------------------------------------------------
     // DirectWriteの初期化
@@ -416,24 +416,25 @@ void DirectX11::Render()
     //------------------------------------------------------------
     // 3D描画
     //------------------------------------------------------------
-    D3D11_MAPPED_SUBRESOURCE msr;
-    //ビューマトリックスの設定
-    m_matView = GameCamera.GetMatrix();
+    //D3D11_MAPPED_SUBRESOURCE msr;
+    ////ビューマトリックスの設定
+    //m_matView = GameCamera.GetMatrix();
 
-    //カメラの更新
-    ConstantBuffer cb1;
-    cb1.world = DirectX::XMMatrixTranslation(0, 0, 0);
-    //cb.world = DirectX::XMMatrixTranspose(m_matWorld);
-    cb1.view = DirectX::XMMatrixTranspose(m_matView);
-    cb1.projection = DirectX::XMMatrixTranspose(m_matProjection);
-    cb1.lightpos = DirectX::XMVectorSet(-1, 1, -2, 1);
-    cb1.eyepos = GameCamera.GetEye();//★---追加---
+    ////カメラの更新
+    //ConstantBuffer cb1;
+    //cb1.world = DirectX::XMMatrixTranslation(0, 0, 0);
+    ////cb.world = DirectX::XMMatrixTranspose(m_matWorld);
+    //cb1.view = DirectX::XMMatrixTranspose(m_matView);
+    //cb1.projection = DirectX::XMMatrixTranspose(m_matProjection);
+    //cb1.lightpos = DirectX::XMVectorSet(-1, 1, -2, 1);
+    //cb1.eyepos = GameCamera.GetEye();//★---追加---
 
-    m_D3DDeviceContext->Map(m_D3DConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
-    memcpy(msr.pData, (void*)(&cb1), sizeof(cb1));
-    m_D3DDeviceContext->Unmap(m_D3DConstantBuffer.Get(), 0);
+    //m_D3DDeviceContext->Map(m_D3DConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
+    //memcpy(msr.pData, (void*)(&cb1), sizeof(cb1));
+    //m_D3DDeviceContext->Unmap(m_D3DConstantBuffer.Get(), 0);
 
     mGameMesh1.Draw();
+    mGameMesh2.Draw();
 
     //ConstantBuffer cb1;
     //cb1.world = DirectX::XMMatrixTranslation(0, -1, 0);
@@ -497,5 +498,5 @@ ID3D11PixelShader* DirectX11::GetPixelShader()
 
 ID3D11Buffer** DirectX11::GetConstantBuffer()
 {
-    return m_D3DConstantBuffer.GetAddressOf();
+    return 0;
 }

@@ -23,7 +23,7 @@ VS_OUTPUT main(float4 pos : POSITION, float3 normal : NORMAL, float3 color : COL
     output.pos = mul(pos, world);
     output.pos = mul(output.pos, view);
     output.pos = mul(output.pos, projection);
-    output.normal = mul(normal, world);
+    output.normal = mul(normal, (float3x3)world);
     output.color = color;
     return output;
 }

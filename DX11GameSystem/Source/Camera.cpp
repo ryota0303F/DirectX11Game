@@ -8,7 +8,20 @@ Camera& Camera::Instance()
 
 Camera::Camera()
 {
+    m_matWorld = DirectX::XMMatrixIdentity();
+    m_matView = DirectX::XMMatrixIdentity();
+    m_matProjection = DirectX::XMMatrixIdentity();
 
+    //ワールドマトリックスの設定
+    m_matWorld = DirectX::XMMatrixIdentity();
+
+    float    fov = (float)DirectX::XMConvertToRadians(45.0f);
+    float    aspect = 1280 / 720;
+    float    nearZ = 0.1f;
+    float    farZ = 100.0f;
+
+    //プロジェクションマトリックスの設定
+    m_matProjection = DirectX::XMMatrixPerspectiveFovLH(fov, aspect, nearZ, farZ);
 }
 
 Camera::~Camera()
@@ -88,14 +101,34 @@ void Camera::Update()
     m_matView = DirectX::XMMatrixLookAtLH(vecEye, vecFocus, vecUp);
 }
 
-DirectX::XMMATRIX Camera::GetMatrix()
+DirectX::XMMATRIX Camera::GetWorldMatrix()
+{
+    return m_matWorld;
+}
+
+DirectX::XMMATRIX* Camera::GetWorldMatrixPtr()
+{
+    return &m_matWorld;
+}
+
+DirectX::XMMATRIX Camera::GetViewMatrix()
 {
     return m_matView;
 }
 
-DirectX::XMMATRIX* Camera::GetMatrixPtr()
+DirectX::XMMATRIX* Camera::GetViewMatrixPtr()
 {
     return &m_matView;
+}
+
+DirectX::XMMATRIX Camera::GetProjectionMatrix()
+{
+    return m_matProjection;
+}
+
+DirectX::XMMATRIX* Camera::GetProjectionMatrixPtr()
+{
+    return &m_matProjection;
 }
 
 DirectX::XMVECTOR Camera::GetEye()
