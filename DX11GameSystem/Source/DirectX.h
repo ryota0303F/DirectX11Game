@@ -19,6 +19,7 @@ public:
     HRESULT CompileShaderFromFile(const WCHAR* wcFileName, LPCSTR lpEntryPoint, LPCSTR lpShaderModel, ID3DBlob** D3DBlob);
     HRESULT InitDevice();
     void Render();
+    void Release();
 
     ID3D11DeviceContext* GetDeviceContext3D();
     ID3D11Device* GetDevice3D();
@@ -43,6 +44,7 @@ private:
 
     //Microsoft::WRL::ComPtr<ID3D11Buffer> m_D3DConstantBuffer;
     Microsoft::WRL::ComPtr<ID3DBlob> m_D3DBlobVS;
+    Microsoft::WRL::ComPtr<ID3DBlob> m_D3DBlobPS;
 
     //------------------------------------------------------------
     // DirectWriteÇÃèâä˙âª

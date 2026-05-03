@@ -62,6 +62,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
         }
     }
 
+    DX11.Release();
+
     CoUninitialize();//COM‚ÌI—¹ˆ—
 
     return (int)msg.wParam;

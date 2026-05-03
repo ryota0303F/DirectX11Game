@@ -208,13 +208,12 @@ HRESULT DirectX11::InitDevice()
         return hr;
 
     //ピクセルシェーダのコンパイル
-    Microsoft::WRL::ComPtr<ID3DBlob> D3DBlobPS;
-    hr = CompileShaderFromFile(L"Shader/PixelShader.hlsl", "main", "ps_5_0", &D3DBlobPS);
+    hr = CompileShaderFromFile(L"Shader/PixelShader.hlsl", "main", "ps_5_0", &m_D3DBlobPS);
     if (FAILED(hr))
         return hr;
 
     //ピクセルシェーダの作成
-    hr = m_D3DDevice->CreatePixelShader(D3DBlobPS->GetBufferPointer(), D3DBlobPS->GetBufferSize(), nullptr, &m_D3DPixelShader);
+    hr = m_D3DDevice->CreatePixelShader(m_D3DBlobPS->GetBufferPointer(), m_D3DBlobPS->GetBufferSize(), nullptr, &m_D3DPixelShader);
     if (FAILED(hr))
         return hr;
 
@@ -336,6 +335,11 @@ void DirectX11::Render()
     m_D2DDeviceContext->EndDraw();
 
     m_DXGISwapChain1->Present(0, 0);
+}
+
+void DirectX11::Release()
+{
+
 }
 
 ID3D11DeviceContext* DirectX11::GetDeviceContext3D()
