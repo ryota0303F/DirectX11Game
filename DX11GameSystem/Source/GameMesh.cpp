@@ -68,11 +68,6 @@ void GameMesh::Load(DirectX::XMFLOAT3 _pos, DirectX::XMFLOAT3 _color)
         return;
 
     //コンスタントバッファの作成
-    //D3D11_BUFFER_DESC bd = {};
-    //bd.Usage = D3D11_USAGE_DYNAMIC;
-    //bd.ByteWidth = sizeof(SimpleVertex) * m_iVertexNum;
-    //bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-    //bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     bd.Usage = D3D11_USAGE_DYNAMIC;
     bd.ByteWidth = sizeof(ConstantBuffer);
     bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;

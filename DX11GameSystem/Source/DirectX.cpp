@@ -207,25 +207,6 @@ HRESULT DirectX11::InitDevice()
     if (FAILED(hr))
         return hr;
 
-    //インプットレイアウトの定義
-    //D3D11_INPUT_ELEMENT_DESC layout[] =
-    //{
-    //    { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-    //    //5番目のパラメータ：先頭からのバイト数4バイト(FLAOT)×3(RGB)=12
-    //    { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-    //};
-    //UINT uiElements = ARRAYSIZE(layout);
-
-    ////インプットレイアウトの作成
-    //Microsoft::WRL::ComPtr<ID3D11InputLayout> D3DInputLayout;
-    //hr = m_D3DDevice->CreateInputLayout(layout, uiElements, D3DBlobVS->GetBufferPointer(),
-    //    D3DBlobVS->GetBufferSize(), &D3DInputLayout);
-    //if (FAILED(hr))
-    //    return hr;
-
-    //インプットレイアウトの設定
-    //m_D3DDeviceContext->IASetInputLayout(D3DInputLayout.Get());
-
     //ピクセルシェーダのコンパイル
     Microsoft::WRL::ComPtr<ID3DBlob> D3DBlobPS;
     hr = CompileShaderFromFile(L"Shader/PixelShader.hlsl", "main", "ps_5_0", &D3DBlobPS);
@@ -237,124 +218,10 @@ HRESULT DirectX11::InitDevice()
     if (FAILED(hr))
         return hr;
 
-    //バーテックスバッファの作成
-    //std::vector<SimpleVertex> vertices(m_iVertexNum);
-    //for (int v = 0; v <= m_iVMax; v++)
-    //{
-    //    for (int u = 0; u < m_iUMax; u++)
-    //    {
-    //        double dTheta = DirectX::XMConvertToRadians(180.0f * v / m_iVMax);
-    //        double dPhi = DirectX::XMConvertToRadians(360.0f * u / m_iUMax);
-    //        FLOAT fX = static_cast<FLOAT>(sin(dTheta) * cos(dPhi));
-    //        FLOAT fY = static_cast<FLOAT>(cos(dTheta));
-    //        FLOAT fZ = static_cast<FLOAT>(sin(dTheta) * sin(dPhi));
-    //        vertices[m_iUMax * v + u].Pos = DirectX::XMFLOAT3(fX, fY, fZ);
-    //        vertices[m_iUMax * v + u].Normal = DirectX::XMFLOAT3(fX, fY, fZ);
-    //    }
-    //}
-    //D3D11_BUFFER_DESC bd = {};
-    //bd.Usage = D3D11_USAGE_DYNAMIC;
-    //bd.ByteWidth = sizeof(SimpleVertex) * m_iVertexNum;
-    //bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-    //bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-
-    //D3D11_SUBRESOURCE_DATA sub = {};
-    //sub.pSysMem = &vertices.front();
-    //hr = m_D3DDevice->CreateBuffer(&bd, &sub, &m_D3DVertexBuffer);
-    //if (FAILED(hr))
-    //    return hr;
-
-    ////バーテックスバッファの設定
-    //UINT uiStride = sizeof(SimpleVertex);
-    //UINT uiOffset = 0;
-    //m_D3DDeviceContext->IASetVertexBuffers(0, 1, m_D3DVertexBuffer.GetAddressOf(), &uiStride, &uiOffset);
-
-    ////インデックスバッファの作成
-    //Microsoft::WRL::ComPtr<ID3D11Buffer> D3DIndexBuffer;
-    //int i = 0;
-    //std::vector<WORD> indices(m_iIndexNum);
-    //for (int v = 0; v < m_iVMax; v++)
-    //{
-    //    for (int u = 0; u <= m_iUMax; u++)
-    //    {
-    //        if (u == m_iUMax)
-    //        {
-    //            indices[i] = v * m_iUMax;
-    //            i++;
-    //            indices[i] = (v + 1) * m_iUMax;
-    //            i++;
-    //        }
-    //        else
-    //        {
-    //            indices[i] = (v * m_iUMax) + u;
-    //            i++;
-    //            indices[i] = indices[i - 1] + m_iUMax;
-    //            i++;
-    //        }
-    //    }
-    //}
-    //bd.Usage = D3D11_USAGE_DEFAULT;
-    //bd.ByteWidth = sizeof(WORD) * m_iIndexNum;
-    //bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
-    //bd.CPUAccessFlags = 0;
-    //sub.pSysMem = &indices.front();
-    //hr = m_D3DDevice->CreateBuffer(&bd, &sub, &D3DIndexBuffer);
-    //if (FAILED(hr))
-    //    return hr;
-
-    ////インデックスバッファの設定
-    //m_D3DDeviceContext->IASetIndexBuffer(D3DIndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
-
     //プリミティブトポロジの設定
     m_D3DDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
-    //コンスタントバッファの作成
-    //D3D11_BUFFER_DESC bd = {};
-    ////bd.Usage = D3D11_USAGE_DYNAMIC;
-    ////bd.ByteWidth = sizeof(SimpleVertex) * m_iVertexNum;
-    ////bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-    ////bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-    //bd.Usage = D3D11_USAGE_DYNAMIC;
-    //bd.ByteWidth = sizeof(ConstantBuffer);
-    //bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-    //bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-    //hr = m_D3DDevice->CreateBuffer(&bd, nullptr, &m_D3DConstantBuffer);
-    //if (FAILED(hr))
-    //    return hr;
-
-    ////ラスタライザの作成
-    //Microsoft::WRL::ComPtr<ID3D11RasterizerState> D3DRasterizerState;
-    //D3D11_RASTERIZER_DESC ras = {};
-    ////D3D11_FILL_WIREFRAME（ワイヤーフレーム） D3D11_FILL_SOLID（ソリッド）
-    //ras.FillMode = D3D11_FILL_SOLID;
-    ////D3D11_CULL_NONE（カリングなし：裏表描画） D3D11_CULL_FRONT（表面カリング：裏面描画） D3D11_CULL_BACK（裏面カリング：表面描画）
-    //ras.CullMode = D3D11_CULL_BACK;
-    //ras.FrontCounterClockwise = TRUE;
-    //hr = m_D3DDevice->CreateRasterizerState(&ras, &D3DRasterizerState);
-    //if (FAILED(hr))
-    //    return hr;
-
-    //ラスタライザの設定
-    //m_D3DDeviceContext->RSSetState(D3DRasterizerState.Get());
-
-    //ワールドマトリックスの設定
-    //m_matWorld = DirectX::XMMatrixIdentity();
-
-    //float    fov = DirectX::XMConvertToRadians(45.0f);
-    //float    aspect = 1280 / 720;
-    //float    nearZ = 0.1f;
-    //float    farZ = 100.0f;
-
-    ////プロジェクションマトリックスの設定
-    //m_matProjection = DirectX::XMMatrixPerspectiveFovLH(fov, aspect, nearZ, farZ);
-
-    //シェーダのセット
-    //m_D3DDeviceContext->VSSetShader(m_D3DVertexShader.Get(), nullptr, 0);
-    //m_D3DDeviceContext->VSSetConstantBuffers(0, 1, m_D3DConstantBuffer.GetAddressOf());
-    //m_D3DDeviceContext->PSSetShader(m_D3DPixelShader.Get(), nullptr, 0);
-    //m_D3DDeviceContext->PSSetConstantBuffers(0, 1, m_D3DConstantBuffer.GetAddressOf());
-
-    mGameMesh1.Load(DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f), DirectX::XMFLOAT3(1.0f, 1.0f, 0.0f));
+    mGameMesh1.Load(DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f), DirectX::XMFLOAT3(1.0f, 1.0f, 0.0f));
     mGameMesh2.Load(DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f), DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f));
 
     //------------------------------------------------------------
