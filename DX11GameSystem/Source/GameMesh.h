@@ -25,6 +25,9 @@ private:
 	//コンスタンスバッファ
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_D3DConstantBuffer;
 
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> D3DSamplerState;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> D3DShaderResourceView;
+
 	ConstantBuffer cb;
 	D3D11_MAPPED_SUBRESOURCE msr;
 

@@ -1,3 +1,7 @@
+Texture2D TextureData : register(t0);
+
+SamplerState SamplerData : register(s0);
+
 cbuffer ConstantBuffer : register(b0)
 {
     matrix world;
@@ -12,6 +16,7 @@ struct VS_OUTPUT
     float4 pos : SV_POSITION;
     float3 normal : NORMAL0;
     float3 color : COLOR;
+    float2 tex : TEXCOORD;
 };
 
 //--------------------------------------------------------------------------------------
@@ -34,5 +39,5 @@ float4 main(VS_OUTPUT input) : SV_TARGET
     float RV = saturate(dot(R, V));
     float3 specular = float3(1.0f, 1.0f, 1.0f) * pow(RV, 10.0f) * 0.15f;
 
-    return float4(ambient + diffuse + specular, 1.0f);
+    return /*float4(ambient + diffuse + specular, 1.0f) **/ TextureData.Sample(SamplerData, input.tex);
 }

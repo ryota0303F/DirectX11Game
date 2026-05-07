@@ -13,10 +13,10 @@ void GameMesh::Load(DirectX::XMFLOAT3 _pos, DirectX::XMFLOAT3 _color)
     //インプットレイアウトの定義
     D3D11_INPUT_ELEMENT_DESC layout[] =
     {
-        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        //5番目のパラメータ：先頭からのバイト数4バイト(FLAOT)×3(RGB)=12
-        { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,    0, 0,                            D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "COLOR",    0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
     };
     UINT uiElements = ARRAYSIZE(layout);
 
@@ -33,10 +33,10 @@ void GameMesh::Load(DirectX::XMFLOAT3 _pos, DirectX::XMFLOAT3 _color)
     std::vector<WORD> mIndices;
 
     //バーテックスバッファの作成
-    mVertices.push_back(SimpleVertex{ DirectX::XMFLOAT3(-0.5f, 0.5f, 0.0f) ,DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f) ,_color });
-    mVertices.push_back(SimpleVertex{ DirectX::XMFLOAT3(0.5f, 0.5f, 0.0f) ,DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f) ,_color });
-    mVertices.push_back(SimpleVertex{ DirectX::XMFLOAT3(-0.5f, -0.5f, 0.0f) ,DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f) ,_color });
-    mVertices.push_back(SimpleVertex{ DirectX::XMFLOAT3(0.5f, -0.5f, 0.0f) ,DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f) ,_color });
+    mVertices.push_back(SimpleVertex{ DirectX::XMFLOAT3(-0.5f, 0.5f, 0.0f) ,DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f) ,_color ,DirectX::XMFLOAT2(0.0f, 0.0f) });
+    mVertices.push_back(SimpleVertex{ DirectX::XMFLOAT3(0.5f, 0.5f, 0.0f) ,DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f) ,_color ,DirectX::XMFLOAT2(1.0f, 0.0f) });
+    mVertices.push_back(SimpleVertex{ DirectX::XMFLOAT3(-0.5f, -0.5f, 0.0f) ,DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f) ,_color ,DirectX::XMFLOAT2(0.0f, 1.0f) });
+    mVertices.push_back(SimpleVertex{ DirectX::XMFLOAT3(0.5f, -0.5f, 0.0f) ,DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f) ,_color ,DirectX::XMFLOAT2(1.0f, 1.0f) });
 
     D3D11_BUFFER_DESC bd = {};
     bd.Usage = D3D11_USAGE_DYNAMIC;
@@ -52,11 +52,11 @@ void GameMesh::Load(DirectX::XMFLOAT3 _pos, DirectX::XMFLOAT3 _color)
 
     //インデックスバッファの作成
     mIndices.push_back(0);
-    mIndices.push_back(2);
-    mIndices.push_back(1);
-    mIndices.push_back(2);
     mIndices.push_back(1);
     mIndices.push_back(3);
+    mIndices.push_back(0);
+    mIndices.push_back(3);
+    mIndices.push_back(2);
 
     bd.Usage = D3D11_USAGE_DEFAULT;
     bd.ByteWidth = sizeof(WORD) * mIndices.size();
@@ -87,6 +87,84 @@ void GameMesh::Load(DirectX::XMFLOAT3 _pos, DirectX::XMFLOAT3 _color)
     if (FAILED(hr))
         return;
 
+    //テクスチャの読み込み
+    Microsoft::WRL::ComPtr<IWICImagingFactory> WICImagingFactory;
+    hr = CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory, (LPVOID*)(&WICImagingFactory));
+    if (FAILED(hr))
+        return;
+
+    Microsoft::WRL::ComPtr<IWICBitmapDecoder> WICBitmapDecoder;
+    //関数CreateDecoderFromFilename()
+    //第1引数：ファイル名
+    hr = WICImagingFactory->CreateDecoderFromFilename(L"Resource/image.png", nullptr, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &WICBitmapDecoder);
+    if (FAILED(hr))
+        return;
+
+    Microsoft::WRL::ComPtr<IWICBitmapFrameDecode> WICBitmapFrameDecode;
+    hr = WICBitmapDecoder->GetFrame(0, &WICBitmapFrameDecode);
+    if (FAILED(hr))
+        return;
+
+    Microsoft::WRL::ComPtr<IWICFormatConverter> WICFormatConverter;
+    hr = WICImagingFactory->CreateFormatConverter(&WICFormatConverter);
+    if (FAILED(hr))
+        return;
+
+    hr = WICFormatConverter->Initialize(WICBitmapFrameDecode.Get(), GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeNone, nullptr, 1.0f, WICBitmapPaletteTypeMedianCut);
+    if (FAILED(hr))
+        return;
+
+    //テクスチャのサイズを取得
+    UINT uiImageWidth;
+    UINT uiImageHeight;
+    hr = WICFormatConverter->GetSize(&uiImageWidth, &uiImageHeight);
+    if (FAILED(hr))
+        return;
+
+    //テクスチャの作成
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> D3DTexture;
+    D3D11_TEXTURE2D_DESC td;
+    td.Width = uiImageWidth;
+    td.Height = uiImageHeight;
+    td.MipLevels = 1;
+    td.ArraySize = 1;
+    td.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    td.SampleDesc.Count = 1;
+    td.SampleDesc.Quality = 0;
+    td.Usage = D3D11_USAGE_DYNAMIC;
+    td.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+    td.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    td.MiscFlags = 0;
+    hr = device->CreateTexture2D(&td, nullptr, &D3DTexture);
+    if (FAILED(hr))
+        return;
+
+    deviceContext3D->Map(D3DTexture.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
+    WICFormatConverter->CopyPixels(nullptr, uiImageWidth * 4, uiImageWidth * uiImageHeight * 4, (BYTE*)msr.pData);
+    deviceContext3D->Unmap(D3DTexture.Get(), 0);
+
+    //シェーダリソースビューの作成
+    //Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> D3DShaderResourceView;
+    D3D11_SHADER_RESOURCE_VIEW_DESC srv = {};
+    srv.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    srv.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+    srv.Texture2D.MipLevels = 1;
+    hr = device->CreateShaderResourceView(D3DTexture.Get(), &srv, &D3DShaderResourceView);
+    if (FAILED(hr))
+        return;
+
+    //サンプラステートの設定
+    //Microsoft::WRL::ComPtr<ID3D11SamplerState> D3DSamplerState;
+    D3D11_SAMPLER_DESC sd = {};
+    //補間方法　D3D11_FILTER_MIN_MAG_MIP_POINT（ポイントサンプリング）、D3D11_FILTER_MIN_MAG_MIP_LINEAR（線形補間）、D3D11_FILTER_ANISOTROPIC（異方性補間）等
+    sd.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+    //0～1の範囲外テクスチャ　D3D11_TEXTURE_ADDRESS_WRAP（並べる）、D3D11_TEXTURE_ADDRESS_MIRROR（反転）等
+    sd.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+    sd.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+    sd.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+    hr = device->CreateSamplerState(&sd, &D3DSamplerState);
+    if (FAILED(hr))
+        return;
 }
 
 void GameMesh::Draw()
@@ -126,6 +204,8 @@ void GameMesh::Draw()
     deviceContext3D->VSSetConstantBuffers(0, 1, m_D3DConstantBuffer.GetAddressOf());
     deviceContext3D->PSSetShader(pixelShader, nullptr, 0);
     deviceContext3D->PSSetConstantBuffers(0, 1, m_D3DConstantBuffer.GetAddressOf());
+    deviceContext3D->PSSetSamplers(0, 1, D3DSamplerState.GetAddressOf());//★---追加---
+    deviceContext3D->PSSetShaderResources(0, 1, D3DShaderResourceView.GetAddressOf());//★---追加---
 
     //球体の描画
     deviceContext3D->DrawIndexed(6, 0, 0);
