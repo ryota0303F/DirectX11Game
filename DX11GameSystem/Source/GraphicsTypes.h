@@ -12,6 +12,8 @@
 #include <DirectXMath.h>
 #include <wincodec.h>
 
+#include <string>
+
 struct SimpleVertex
 {
     DirectX::XMFLOAT3 Pos;

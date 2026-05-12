@@ -36,6 +36,9 @@
     <ClCompile Include="Source\Camera.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="Source\GameModel.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\main.h">
@@ -56,6 +59,9 @@
     <ClInclude Include="Source\GraphicsTypes.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="Source\GameModel.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shader\VertexShader.hlsl">
@@ -64,5 +70,8 @@
     <FxCompile Include="Shader\PixelShader.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

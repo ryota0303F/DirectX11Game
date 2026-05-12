@@ -130,6 +130,7 @@
     <ClCompile Include="Source\Camera.cpp" />
     <ClCompile Include="Source\DirectX.cpp" />
     <ClCompile Include="Source\GameMesh.cpp" />
+    <ClCompile Include="Source\GameModel.cpp" />
     <ClCompile Include="Source\main.cpp" />
     <ClCompile Include="Source\Texture.cpp" />
   </ItemGroup>
@@ -137,6 +138,7 @@
     <ClInclude Include="Source\Camera.h" />
     <ClInclude Include="Source\DirectX.h" />
     <ClInclude Include="Source\GameMesh.h" />
+    <ClInclude Include="Source\GameModel.h" />
     <ClInclude Include="Source\GraphicsTypes.h" />
     <ClInclude Include="Source\main.h" />
     <ClInclude Include="Source\Texture.h" />
@@ -163,7 +165,17 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="packages\AssimpCpp.5.0.1.6\build\native\AssimpCpp.targets" Condition="Exists('packages\AssimpCpp.5.0.1.6\build\native\AssimpCpp.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>このプロジェクトは、このコンピューター上にない NuGet パッケージを参照しています。それらのパッケージをダウンロードするには、[NuGet パッケージの復元] を使用します。詳細については、http://go.microsoft.com/fwlink/?LinkID=322105 を参照してください。見つからないファイルは {0} です。</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('packages\AssimpCpp.5.0.1.6\build\native\AssimpCpp.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\AssimpCpp.5.0.1.6\build\native\AssimpCpp.targets'))" />
+  </Target>
 </Project>
